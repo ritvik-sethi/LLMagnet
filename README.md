@@ -77,6 +77,11 @@ This platform is designed for the future of search - where AI and Large Language
    ```
    OPENAI_API_KEY=your_api_key_here
    ```
+   
+   Or run the setup script:
+   ```bash
+   node setup-env.js
+   ```
 
 3. **Run Development Server**
    ```bash
@@ -92,9 +97,57 @@ This platform is designed for the future of search - where AI and Large Language
    - Semantic SEO Score: `http://localhost:3000/semantic-seo-score`
    - Trend Alerts: `http://localhost:3000/trend-alerts`
 
-## 📖 Usage
+## 🚀 Deployment
 
-### Query Optimizer Workflow
+### Deploy to Vercel (Recommended)
+
+1. **Push to GitHub** (if not already done):
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
+
+2. **Deploy to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Sign up with your GitHub account
+   - Click "New Project" → Import your repository
+   - Vercel will auto-detect Next.js settings
+
+3. **Configure Environment Variables**:
+   - In Vercel dashboard → Project Settings → Environment Variables
+   - Add: `OPENAI_API_KEY` = `your_actual_api_key`
+
+4. **Connect Custom Domain** (GoDaddy):
+   - In Vercel → Project Settings → Domains
+   - Add your custom domain
+   - In GoDaddy DNS, add these records:
+     ```
+     Type: A, Name: @, Value: 76.76.19.19
+     Type: CNAME, Name: www, Value: cname.vercel-dns.com
+     ```
+
+### Deploy to Netlify
+
+1. **Deploy to Netlify**:
+   - Go to [netlify.com](https://netlify.com)
+   - Sign up with GitHub
+   - Click "New site from Git" → Choose your repository
+
+2. **Configure Environment Variables**:
+   - In Netlify → Site Settings → Environment Variables
+   - Add: `OPENAI_API_KEY` = `your_actual_api_key`
+
+3. **Connect Custom Domain** (GoDaddy):
+   - In Netlify → Site Settings → Domain Management
+   - Add your custom domain
+   - In GoDaddy DNS, add these records:
+     ```
+     Type: A, Name: @, Value: 75.2.60.5
+     Type: CNAME, Name: www, Value: your-site-name.netlify.app
+     ```
+
+## 📖 Usage
 
 1. **Enter Queries**: Add up to 6 LLM-style search queries
 2. **Add Content**: Provide article heading and content
