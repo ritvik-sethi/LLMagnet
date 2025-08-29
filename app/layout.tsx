@@ -14,6 +14,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <title>Engineering Discoverability for the Next Generation of Search</title>
+        <meta name="description" content="Optimize your content to boost search rankings and earn more LLM citations. Our comprehensive suite of SEO tools helps you analyze, optimize, and improve your content's performance in search engines." />
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+      </head>
       <body className={inter.className}>
         <Providers>
           <NavBar />
