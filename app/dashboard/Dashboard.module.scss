@@ -1,0 +1,54 @@
+@import '../../styles/variables';
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+  
+  .loadingSpinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba($primary-color, 0.3);
+    border-top: 4px solid $primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+  
+  .errorIcon {
+    font-size: 3rem;
+    color: $error-color;
+  }
+}
+
+.scoreIcon {
+  font-size: 1.2rem;
+}
+
+.trendUp {
+  color: $success-color;
+}
+
+.trendDown {
+  color: $error-color;
+}
+
+.trendNeutral {
+  color: $text-secondary;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 

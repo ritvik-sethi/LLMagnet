@@ -1,0 +1,1153 @@
+@import 'variables';
+
+// Variables
+$primary-color: #2563eb;
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$border-color: #e5e7eb;
+$light-gray: #f3f4f6;
+$card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin primary-button {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+// Animations
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+
+    .title {
+      font-size: 2.5rem;
+      color: $primary-color;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+
+      .icon {
+        font-size: 2rem;
+      }
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: $text-secondary;
+    }
+  }
+
+  .querySection {
+    background: white;
+    border-radius: 8px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    
+    &.hasResults {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+    }
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .icon {
+        color: $primary-color;
+      }
+      
+      .editableIndicator {
+        font-size: 0.9rem;
+        color: $text-secondary;
+        font-weight: 400;
+        margin-left: 0.5rem;
+        
+        @media (max-width: 768px) {
+          display: block;
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+      }
+    }
+
+    .queryList {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .queryInput {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: slideIn 0.3s ease-out;
+
+      input {
+        flex: 1;
+        padding: 1rem;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+        }
+
+        &::placeholder {
+          color: $text-secondary;
+        }
+      }
+
+      .addButton, .removeButton {
+        padding: 0.5rem;
+        border: none;
+        background: none;
+        color: $text-secondary;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 4px;
+
+        &:hover {
+          background: $light-gray;
+          color: $primary-color;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .contentSection {
+    background: white;
+    border-radius: 8px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    
+    &.hasResults {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+    }
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .icon {
+        color: $primary-color;
+      }
+      
+      .editableIndicator {
+        font-size: 0.9rem;
+        color: $text-secondary;
+        font-weight: 400;
+        margin-left: 0.5rem;
+        
+        @media (max-width: 768px) {
+          display: block;
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+      }
+    }
+
+    .headingInput {
+      margin-bottom: 1.5rem;
+
+      input {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+        }
+
+        &::placeholder {
+          color: $text-secondary;
+        }
+      }
+    }
+
+    .articleEditor {
+      position: relative;
+
+      textarea {
+        width: 100%;
+        min-height: 300px;
+        padding: 1rem;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        font-size: 1rem;
+        line-height: 1.6;
+        resize: vertical;
+        transition: all 0.2s;
+        font-family: inherit;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+        }
+
+        &::placeholder {
+          color: $text-secondary;
+        }
+      }
+    }
+  }
+
+  .buttonGroup {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+    gap: 1rem;
+  }
+
+  .analyzeButton {
+    @include primary-button;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .icon {
+      font-size: 1.2rem;
+      
+      &.spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  .errorMessage {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  // Dashboard Styles
+  .dashboard {
+    animation: slideIn 0.5s ease-out;
+  }
+
+  // Dashboard Explanation
+  .dashboardExplanation {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        color: $primary-color;
+      }
+    }
+
+    .explanationContent {
+      display: grid;
+      gap: 1.5rem;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+    }
+
+    .explanationCard {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+
+      h3 {
+        color: $text-primary;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      p {
+        color: $text-secondary;
+        line-height: 1.6;
+        margin-bottom: 0;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: $text-secondary;
+
+        li {
+          margin-bottom: 0.5rem;
+          line-height: 1.5;
+
+          strong {
+            color: $text-primary;
+          }
+        }
+      }
+    }
+  }
+
+  // Metrics Overview
+  .metricsOverview {
+    background: white;
+    border-radius: 12px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        color: $primary-color;
+      }
+    }
+
+    .metricsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .metricCard {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .metricHeader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: $text-secondary;
+        font-size: 0.9rem;
+        font-weight: 500;
+        position: relative;
+
+        .metricIcon {
+          color: $primary-color;
+          font-size: 1.2rem;
+        }
+
+        .tooltip {
+          position: relative;
+          display: inline-block;
+          margin-left: 0.5rem;
+
+          .tooltipIcon {
+            color: $primary-color;
+            font-size: 0.9rem;
+            cursor: help;
+            transition: color 0.2s;
+
+            &:hover {
+              color: darken($primary-color, 10%);
+            }
+          }
+
+          .tooltipText {
+            visibility: hidden;
+            width: 280px;
+            background-color: #1f2937;
+            color: white;
+            text-align: left;
+            border-radius: 8px;
+            padding: 0.75rem;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+            &::after {
+              content: "";
+              position: absolute;
+              top: 100%;
+              left: 50%;
+              margin-left: -5px;
+              border-width: 5px;
+              border-style: solid;
+              border-color: #1f2937 transparent transparent transparent;
+            }
+          }
+
+          &:hover .tooltipText {
+            visibility: visible;
+            opacity: 1;
+          }
+        }
+      }
+
+      .metricValue {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: $primary-color;
+        margin-bottom: 0.5rem;
+      }
+
+      .metricDescription {
+        color: $text-secondary;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  // Optimized Queries
+  .optimizedQueries {
+    background: white;
+    border-radius: 12px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        color: $primary-color;
+      }
+    }
+
+    .queriesGrid {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .queryCard {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .queryHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+
+        h3 {
+          color: $text-primary;
+          font-size: 1.3rem;
+          margin: 0;
+          flex: 1;
+        }
+
+        .queryActions {
+          button {
+            background: none;
+            border: none;
+            color: $text-secondary;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            &:hover {
+              background: $light-gray;
+              color: $primary-color;
+            }
+          }
+        }
+      }
+
+      .queryMetrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .metric {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem;
+          background: white;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+
+          .metricValue {
+            font-weight: 600;
+            color: $primary-color;
+          }
+        }
+      }
+
+      .queryTags {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+
+        .difficultyTag, .typeTag {
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: white;
+        }
+
+        .typeTag {
+          background: $primary-color;
+        }
+      }
+
+      .queryDetails {
+        .detailSection {
+          margin-bottom: 1.5rem;
+
+          h4 {
+            color: $text-primary;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+
+            .sectionTooltip {
+              position: relative;
+              display: inline-block;
+
+              .tooltipIcon {
+                color: $primary-color;
+                font-size: 0.8rem;
+                cursor: help;
+                transition: color 0.2s;
+
+                &:hover {
+                  color: darken($primary-color, 10%);
+                }
+              }
+
+              .tooltipText {
+                visibility: hidden;
+                width: 300px;
+                background-color: #1f2937;
+                color: white;
+                text-align: left;
+                border-radius: 8px;
+                padding: 0.75rem;
+                position: absolute;
+                z-index: 1000;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0;
+                transition: opacity 0.3s;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+                &::after {
+                  content: "";
+                  position: absolute;
+                  top: 100%;
+                  left: 50%;
+                  margin-left: -5px;
+                  border-width: 5px;
+                  border-style: solid;
+                  border-color: #1f2937 transparent transparent transparent;
+                }
+              }
+
+              &:hover .tooltipText {
+                visibility: visible;
+                opacity: 1;
+              }
+            }
+          }
+
+          p {
+            color: $text-secondary;
+            line-height: 1.6;
+            margin: 0;
+          }
+
+          .tagList {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+
+            .tag {
+              background: $light-gray;
+              color: $text-primary;
+              padding: 0.25rem 0.75rem;
+              border-radius: 20px;
+              font-size: 0.8rem;
+              border: 1px solid #e2e8f0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Implementation Plan
+  .implementationPlan {
+    background: white;
+    border-radius: 12px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        color: $primary-color;
+      }
+    }
+
+    .planDetails {
+      .planHeader {
+        margin-bottom: 2rem;
+
+        .planInfo {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+
+          .timeline, .priority {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+
+          .timeline {
+            background: $light-gray;
+            color: $text-primary;
+          }
+
+          .priority {
+            color: white;
+          }
+        }
+      }
+
+      .stepsList {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+
+        .stepCard {
+          display: flex;
+          gap: 1.5rem;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 1.5rem;
+
+          .stepNumber {
+            background: $primary-color;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+          }
+
+          .stepContent {
+            flex: 1;
+
+            h4 {
+              color: $text-primary;
+              margin-bottom: 1rem;
+              font-size: 1.1rem;
+            }
+
+            p {
+              color: $text-secondary;
+              margin-bottom: 0.5rem;
+              line-height: 1.6;
+
+              strong {
+                color: $text-primary;
+              }
+            }
+          }
+        }
+      }
+
+      .successMetrics {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 1.5rem;
+
+        h3 {
+          color: $text-primary;
+          margin-bottom: 1rem;
+          font-size: 1.2rem;
+        }
+
+        .metricsDetails {
+          .metricItem {
+            margin-bottom: 1rem;
+            position: relative;
+
+            strong {
+              color: $text-primary;
+            }
+
+            .kpiTooltip {
+              position: relative;
+              display: inline-block;
+              margin-left: 0.5rem;
+
+              .tooltipIcon {
+                color: $primary-color;
+                font-size: 0.8rem;
+                cursor: help;
+                transition: color 0.2s;
+
+                &:hover {
+                  color: darken($primary-color, 10%);
+                }
+              }
+
+              .tooltipText {
+                visibility: hidden;
+                width: 300px;
+                background-color: #1f2937;
+                color: white;
+                text-align: left;
+                border-radius: 8px;
+                padding: 0.75rem;
+                position: absolute;
+                z-index: 1000;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0;
+                transition: opacity 0.3s;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+                &::after {
+                  content: "";
+                  position: absolute;
+                  top: 100%;
+                  left: 50%;
+                  margin-left: -5px;
+                  border-width: 5px;
+                  border-style: solid;
+                  border-color: #1f2937 transparent transparent transparent;
+                }
+              }
+
+              &:hover .tooltipText {
+                visibility: visible;
+                opacity: 1;
+              }
+            }
+
+            ul {
+              margin: 0.5rem 0 0 1.5rem;
+              color: $text-secondary;
+
+              li {
+                margin-bottom: 0.25rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Risk Assessment
+  .riskAssessment {
+    background: white;
+    border-radius: 12px;
+    box-shadow: $card-shadow;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .sectionTitle {
+      font-size: 1.5rem;
+      color: $text-primary;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        color: $primary-color;
+      }
+    }
+
+    .risksList {
+      display: grid;
+      gap: 1.5rem;
+
+      .riskCard {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 1.5rem;
+
+        .riskHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+
+          h4 {
+            color: $text-primary;
+            margin: 0;
+            font-size: 1.1rem;
+          }
+
+          .riskMetrics {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+
+            .probability, .impact {
+              padding: 0.25rem 0.75rem;
+              border-radius: 20px;
+              font-size: 0.8rem;
+              font-weight: 500;
+              color: white;
+            }
+          }
+        }
+
+        .riskDetails {
+          p {
+            color: $text-secondary;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+
+            strong {
+              color: $text-primary;
+            }
+          }
+
+          .mitigation {
+            strong {
+              color: $text-primary;
+              display: block;
+              margin-bottom: 0.5rem;
+            }
+
+            ul {
+              margin: 0;
+              padding-left: 1.5rem;
+              color: $text-secondary;
+
+              li {
+                margin-bottom: 0.25rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Action Buttons
+  .actionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+
+    .rewriteButton {
+      @include primary-button;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      }
+
+      .icon {
+        font-size: 1.2rem;
+      }
+    }
+
+    .resetButton {
+      background: $light-gray;
+      color: $text-primary;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      padding: 1rem 2rem;
+
+      &:hover {
+        background: darken($light-gray, 5%);
+      }
+
+      .icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  // Context Tooltip Styles
+  .contextTooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 0.5rem;
+
+    .tooltipIcon {
+      color: $primary-color;
+      font-size: 0.9rem;
+      cursor: help;
+      transition: color 0.2s;
+
+      &:hover {
+        color: darken($primary-color, 10%);
+      }
+    }
+
+    .tooltipText {
+      visibility: hidden;
+      width: 280px;
+      background-color: #1f2937;
+      color: #e5e7eb;
+      text-align: left;
+      border-radius: 8px;
+      padding: 0.75rem;
+      position: absolute;
+      z-index: 1000;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      font-weight: 300;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #1f2937 transparent transparent transparent;
+      }
+      
+      @media (max-width: 768px) {
+        width: 250px;
+        font-size: 0.7rem;
+        padding: 0.5rem;
+      }
+    }
+
+    &:hover .tooltipText {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .header {
+      .title {
+        font-size: 2rem;
+      }
+      
+      .subtitle {
+        font-size: 1rem;
+      }
+    }
+
+    .querySection,
+    .contentSection {
+      padding: 1.5rem;
+    }
+
+    .metricsGrid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .queryMetrics {
+      grid-template-columns: 1fr;
+    }
+
+    .actionButtons {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .rewriteButton,
+      .resetButton {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    .stepCard {
+      flex-direction: column;
+      text-align: center;
+
+      .stepNumber {
+        align-self: center;
+      }
+    }
+
+    .riskHeader {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .dashboardExplanation {
+      padding: 1.5rem;
+      
+      .explanationContent {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .optimizedQueries {
+      padding: 1.5rem;
+    }
+    
+    .implementationPlan {
+      padding: 1.5rem;
+    }
+    
+    .riskAssessment {
+      padding: 1.5rem;
+    }
+  }
+} 

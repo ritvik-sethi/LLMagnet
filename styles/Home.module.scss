@@ -1,0 +1,256 @@
+// Variables
+$primary-color: #2563eb;
+$text-color: #1f2937;
+$light-gray: #f3f4f6;
+$border-color: #e5e7eb;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Navigation
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  border-bottom: 1px solid $border-color;
+
+  .navContainer {
+    @include container;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text-color;
+    text-decoration: none;
+  }
+
+  .navLinks {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+
+    a {
+      color: $text-color;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+
+      &:hover {
+        color: $primary-color;
+      }
+    }
+  }
+}
+
+// Hero Section
+.hero {
+  padding: 40px 0 10px;
+  background: linear-gradient(to bottom, #ffffff, $light-gray);
+
+  .heroContainer {
+    @include container;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: $text-color;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .subHeading {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: $primary-color;
+    margin-bottom: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #4b5563;
+    max-width: 2300px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+.heroLogo {
+  height: 3rem;
+  width: auto;
+  display: block;
+  margin: 0 auto 1.5rem auto;
+}
+
+// Features Section
+.features {
+  padding: 80px 0;
+  background: white;
+
+  .featuresContainer {
+    @include container;
+  }
+
+  .featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .featureCard {
+    padding: 2rem;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(37, 99, 235, 0.03);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+      &::after {
+        opacity: 1;
+      }
+
+      .icon {
+        transform: scale(1.1);
+        color: darken($primary-color, 10%);
+      }
+
+      .featureTitle {
+        color: $primary-color;
+      }
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1.5rem;
+      color: $primary-color;
+      transition: all 0.3s ease;
+    }
+
+    .featureTitle {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: $text-color;
+      transition: color 0.3s ease;
+    }
+
+    .featureDescription {
+      color: #6b7280;
+      line-height: 1.6;
+    }
+  }
+}
+
+// How It Works Section
+.howItWorks {
+  padding: 80px 0;
+  background: $light-gray;
+
+  .howItWorksContainer {
+    @include container;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .step {
+    text-align: center;
+    padding: 2rem;
+
+    .stepNumber {
+      width: 40px;
+      height: 40px;
+      background: $primary-color;
+      color: white;
+      border-radius: 50%;
+      @include flex-center;
+      margin: 0 auto 1rem;
+      font-weight: 600;
+    }
+
+    .stepTitle {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: $text-color;
+    }
+
+    .stepDescription {
+      color: #6b7280;
+      line-height: 1.6;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .nav {
+    .navLinks {
+      display: none;
+    }
+  }
+
+  .hero {
+    .title {
+      font-size: 1.5rem;
+    }
+    .subHeading {
+      font-size: 1.25rem;
+    }
+    .subtitle {
+      font-size: 1rem;
+    }
+  }
+
+  .howItWorks {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+} 
