@@ -8,7 +8,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <NextUIProvider>
-        {children}
+        <div data-theme="light">
+          {children}
+        </div>
       </NextUIProvider>
     </Provider>
   );
