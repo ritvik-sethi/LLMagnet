@@ -1,0 +1,158 @@
+@import 'variables';
+
+.aiSparkleLoader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.5s ease-out;
+
+  .sparkleContainer {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .sparkle {
+      position: absolute;
+      font-size: 1.2rem;
+      opacity: 0;
+      animation: sparkleFloat 2s ease-in-out infinite;
+
+      &.sparkle1 {
+        top: 10%;
+        left: 20%;
+        animation-delay: 0s;
+      }
+
+      &.sparkle2 {
+        top: 20%;
+        right: 15%;
+        animation-delay: 0.25s;
+      }
+
+      &.sparkle3 {
+        bottom: 30%;
+        left: 10%;
+        animation-delay: 0.5s;
+      }
+
+      &.sparkle4 {
+        bottom: 20%;
+        right: 25%;
+        animation-delay: 0.75s;
+      }
+
+      &.sparkle5 {
+        top: 50%;
+        left: 5%;
+        animation-delay: 1s;
+      }
+
+      &.sparkle6 {
+        top: 40%;
+        right: 5%;
+        animation-delay: 1.25s;
+      }
+
+      &.sparkle7 {
+        bottom: 40%;
+        left: 30%;
+        animation-delay: 1.5s;
+      }
+
+      &.sparkle8 {
+        bottom: 10%;
+        right: 10%;
+        animation-delay: 1.75s;
+      }
+    }
+  }
+
+  .loadingMessage {
+    text-align: center;
+    font-size: 0.95rem;
+    color: $text-secondary;
+    line-height: 1.5;
+    max-width: 500px;
+    animation: messageFade 0.5s ease-in-out;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    min-height: 70px;
+  }
+}
+
+@keyframes sparkleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-20px) scale(1.1);
+  }
+  75% {
+    opacity: 0.6;
+    transform: translateY(-15px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.8);
+  }
+}
+
+@keyframes messageFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .aiSparkleLoader {
+    padding: 1rem;
+    margin-top: 0.5rem;
+
+    .sparkleContainer {
+      width: 60px;
+      height: 60px;
+
+      .sparkle {
+        font-size: 1rem;
+      }
+    }
+
+    .loadingMessage {
+      font-size: 0.9rem;
+      max-width: 300px;
+    }
+  }
+} 
