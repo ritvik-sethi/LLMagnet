@@ -4,11 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   FaFileAlt, 
-  FaTrash, 
   FaRocket, 
   FaRobot, 
   FaTools, 
-  FaTimes, 
+  FaTimes,
   FaCheck, 
   FaExclamationTriangle,
   FaQuoteLeft,
@@ -304,15 +303,7 @@ export default function ContentScore() {
               onChange={(e) => dispatch(setHeadingText(e.target.value))}
               placeholder="Enter your content title..."
             />
-            {headingText && (
-              <button
-                className={styles.clearButton}
-                onClick={() => dispatch(clearHeading())}
-                title="Clear heading"
-              >
-                <FaTimes />
-              </button>
-            )}
+
             <div className={styles.characterCount}>
               {headingCharacterCount}/100 characters
             </div>
@@ -321,10 +312,6 @@ export default function ContentScore() {
 
         {/* Text Editor */}
         <div className={styles.editor}>
-          <label className={styles.editorLabel}>
-            <FaFileAlt className={styles.icon} />
-            Content
-          </label>
           <textarea
             id="content-editor"
             className={styles.textArea}
@@ -335,15 +322,7 @@ export default function ContentScore() {
           <div className={styles.characterCount}>
             {characterCount}/5000 characters
           </div>
-          {inputText && (
-            <button
-              className={styles.clearButton}
-              onClick={() => dispatch(clearInput())}
-              title="Clear content"
-            >
-              <FaTrash />
-            </button>
-          )}
+
         </div>
       </div>
 
