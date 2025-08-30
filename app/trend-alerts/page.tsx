@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { 
@@ -15,6 +15,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import styles from '@/styles/TrendAlerts.module.scss';
+import AISparkleLoader from '@/components/AISparkleLoader';
 import {
   updateHeading,
   updateContent,
@@ -206,18 +207,12 @@ export default function TrendAlerts() {
             onClick={handleAnalyzeContent}
             disabled={isLoading || !heading.trim() || !content.trim()}
           >
-            {isLoading ? (
-              <>
-                <div className={styles.spinner}></div>
-                Analyzing Content...
-              </>
-            ) : (
-              <>
-                <FaChartLine />
-                Analyze Content
-              </>
-            )}
+            <FaChartLine />
+            {isLoading ? 'Analyzing Content...' : 'Analyze Content'}
           </button>
+
+          {/* AI Sparkle Loader */}
+          <AISparkleLoader isLoading={isLoading} />
         </div>
       </section>
 

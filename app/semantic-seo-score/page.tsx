@@ -1,27 +1,36 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { 
   FaBrain, 
   FaCode, 
-  FaSearch, 
-  FaLightbulb, 
-  FaRocket, 
+  FaTrash, 
+  FaExclamationTriangle, 
+  FaInfoCircle,
+  FaCheck,
+  FaTimes,
+  FaArrowUp,
+  FaArrowDown,
   FaArrowRight,
-  FaClock,
-  FaExclamationTriangle,
-  FaTrash,
-  FaInfoCircle
+  FaLightbulb,
+  FaChartBar,
+  FaSearch,
+  FaCog,
+  FaRocket,
+  FaEye,
+  FaEyeSlash,
+  FaClock
 } from 'react-icons/fa';
 import styles from '@/styles/SemanticScore.module.scss';
+import AISparkleLoader from '@/components/AISparkleLoader';
 import {
   setContent,
   setLoading,
   setError,
   setApiResponse,
-  reset,
+  reset
 } from '@/store/slices/semanticScoreSlice';
 import { setIncomingContent } from '@/store/slices/rewriteSlice';
 import type { RootState } from '@/store/store';
@@ -156,11 +165,15 @@ export default function SemanticScore() {
           
           <div className={styles.codeEditorContainer}>
             <textarea
+              id="html-code-editor"
+              name="html-code-editor"
               value={content}
               onChange={(e) => dispatch(setContent(e.target.value))}
               placeholder="Paste your HTML code here for semantic analysis..."
               className={styles.codeEditor}
               spellCheck={false}
+              rows={12}
+              aria-label="HTML code editor for semantic analysis"
             />
           </div>
 
@@ -169,18 +182,12 @@ export default function SemanticScore() {
             onClick={handleAnalyze}
             disabled={isLoading || !content.trim()}
           >
-            {isLoading ? (
-              <>
-                <div className={styles.spinner}></div>
-                Analyzing HTML Structure...
-              </>
-            ) : (
-              <>
-                <FaBrain />
-                Evaluate HTML Semantic SEO
-              </>
-            )}
+            <FaBrain />
+            {isLoading ? 'Analyzing HTML Structure...' : 'Evaluate HTML Semantic SEO'}
           </button>
+
+          {/* AI Sparkle Loader */}
+          <AISparkleLoader isLoading={isLoading} />
         </div>
       </section>
 

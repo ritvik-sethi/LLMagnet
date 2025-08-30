@@ -1,6 +1,86 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  FaSearch, 
+  FaPlus, 
+  FaTrash, 
+  FaChartLine, 
+  FaTrophy, 
+  FaQuoteLeft, 
+  FaInfoCircle, 
+  FaLightbulb, 
+  FaExclamationTriangle,
+  FaCheck,
+  FaTimes,
+  FaArrowUp,
+  FaArrowDown,
+  FaCog,
+  FaRocket,
+  FaStar,
+  FaThumbsUp,
+  FaThumbsDown,
+  FaClock,
+  FaUser,
+  FaUsers,
+  FaGlobe,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaHeart,
+  FaBookmark,
+  FaShare,
+  FaComment,
+  FaRetweet,
+  FaSmile,
+  FaFrown,
+  FaMeh,
+  FaGrin,
+  FaLaugh,
+  FaSurprise,
+  FaAngry,
+  FaSadTear,
+  FaTired,
+  FaDizzy,
+  FaFlushed,
+  FaGrimace,
+  FaGrinSquint,
+  FaGrinSquintTears,
+  FaGrinStars,
+  FaGrinTears,
+  FaGrinTongue,
+  FaGrinTongueSquint,
+  FaGrinTongueWink,
+  FaGrinWink,
+  FaKiss,
+  FaKissWinkHeart,
+  FaLaughSquint,
+  FaLaughWink,
+  FaSadCry,
+  FaMinus,
+  FaThLarge,
+  FaChartBar,
+  FaFileAlt,
+  FaBrain
+} from 'react-icons/fa';
+import styles from '@/styles/CompetitorAnalysis.module.scss';
+import AISparkleLoader from '@/components/AISparkleLoader';
+import {
+  setUserArticle,
+  addCompetitor,
+  removeCompetitor,
+  updateCompetitor,
+  addQuery,
+  removeQuery,
+  setAnalysisResults,
+  setError,
+  setLoading,
+  reset
+} from '@/store/slices/competitorAnalysisSlice';
+import type { RootState } from '@/store/store';
+
+
 
 // Type definitions
 interface Recommendation {
@@ -13,40 +93,6 @@ interface Recommendation {
   llmCitabilityImpact?: string;
   implementation?: string;
 }
-import { useDispatch, useSelector } from 'react-redux';
-import { 
-  FaChartBar, 
-  FaPlus, 
-  FaTrash, 
-  FaSearch, 
-  FaFileAlt, 
-  FaExclamationTriangle, 
-  FaTimes,
-  FaQuoteLeft,
-  FaBrain,
-  FaLightbulb,
-  FaThLarge,
-  FaTrophy,
-  FaArrowUp,
-  FaArrowDown,
-  FaCheck,
-  FaInfoCircle,
-  FaMinus
-} from 'react-icons/fa';
-import styles from '@/styles/CompetitorAnalysis.module.scss';
-import { RootState } from '@/store/store';
-import {
-  setUserArticle,
-  addCompetitor,
-  removeCompetitor,
-  updateCompetitor,
-  addQuery,
-  removeQuery,
-  setAnalysisResults,
-  setLoading,
-  setError,
-} from '@/store/slices/competitorAnalysisSlice';
-
 
 
 // Score Card Component with Context
@@ -691,6 +737,9 @@ export default function CompetitorAnalysis() {
           </button>
         )}
       </section>
+
+      {/* AI Sparkle Loader */}
+      <AISparkleLoader isLoading={loading} />
     </div>
   );
 } 

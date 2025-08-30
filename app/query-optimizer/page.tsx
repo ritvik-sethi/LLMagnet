@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { 
@@ -26,6 +26,7 @@ import {
   FaPlay
 } from 'react-icons/fa';
 import styles from '@/styles/QueryOptimizer.module.scss';
+import AISparkleLoader from '@/components/AISparkleLoader';
 import {
   addQuery,
   removeQuery,
@@ -295,19 +296,13 @@ export default function QueryOptimizer() {
           onClick={handleAnalyze}
           disabled={!isValid || isAnalyzing}
         >
-          {isAnalyzing ? (
-            <>
-              <FaCog className={`${styles.icon} ${styles.spinning}`} />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <FaBrain className={styles.icon} />
-              {analysisResult ? 'Re-analyze for LLM Optimization' : 'Analyze for LLM Optimization'}
-            </>
-          )}
+          <FaBrain className={styles.icon} />
+          {isAnalyzing ? 'Analyzing...' : (analysisResult ? 'Re-analyze for LLM Optimization' : 'Analyze for LLM Optimization')}
         </button>
       </div>
+
+      {/* AI Sparkle Loader */}
+      <AISparkleLoader isLoading={isAnalyzing} />
 
       {error && (
         <div className={styles.errorMessage}>

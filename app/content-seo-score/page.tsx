@@ -24,6 +24,7 @@ import {
   FaCog
 } from 'react-icons/fa';
 import styles from '@/styles/ContentScore.module.scss';
+import AISparkleLoader from '@/components/AISparkleLoader';
 import {
   setHeadingText,
   setInputText,
@@ -352,18 +353,12 @@ export default function ContentScore() {
         onClick={handleEvaluate}
         disabled={!inputText.trim() || isLoading}
       >
-        {isLoading ? (
-          <>
-            <div className={styles.loadingSpinner} />
-            Analyzing...
-          </>
-        ) : (
-          <>
-            <FaRocket className={styles.icon} />
-            Analyze Content
-          </>
-        )}
+        <FaRocket className={styles.icon} />
+        {isLoading ? 'Analyzing...' : 'Analyze Content'}
       </button>
+
+      {/* AI Sparkle Loader */}
+      <AISparkleLoader isLoading={isLoading} />
 
       {/* Error Display */}
       {error && (

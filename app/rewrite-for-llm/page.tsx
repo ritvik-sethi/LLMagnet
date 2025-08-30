@@ -23,6 +23,7 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import html from 'react-syntax-highlighter/dist/esm/languages/hljs/xml';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { html as beautifyHtml } from 'js-beautify';
+import AISparkleLoader from '@/components/AISparkleLoader';
 
 SyntaxHighlighter.registerLanguage('html', html);
 
@@ -496,6 +497,8 @@ export default function RewriteForLLM() {
                     {lineNumbers}
                   </div>
                   <textarea
+                    id="html-code-editor-rewrite"
+                    name="html-code-editor-rewrite"
                     ref={editorRef}
                     className={styles.codeEditor}
                     value={semantic.html}
@@ -504,6 +507,8 @@ export default function RewriteForLLM() {
                     onPaste={handlePaste}
                     placeholder="Paste or write your HTML code here..."
                     spellCheck={false}
+                    rows={12}
+                    aria-label="HTML code editor for rewrite optimization"
                   />
                   {semantic.html && (
                     <button
@@ -660,6 +665,9 @@ export default function RewriteForLLM() {
           Reset All
         </button>
       </div>
+
+      {/* AI Sparkle Loader */}
+      <AISparkleLoader isLoading={isRewriting} />
 
       {result && (
         <section
