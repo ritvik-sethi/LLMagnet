@@ -12,7 +12,7 @@ $error-color: #ef4444;
 
 // Mixins
 @mixin primary-button {
-  background-color: $primary-color;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
   color: white;
   border: none;
   border-radius: 8px;
@@ -21,27 +21,41 @@ $error-color: #ef4444;
   font-weight: 500;
 
   &:hover:not(:disabled) {
-    background-color: darken($primary-color, 10%);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px #2563eb66;
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 @mixin secondary-button {
-  background-color: white;
-  color: $text-primary;
-  border: 1px solid $border-color;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
 
-  &:hover {
-    border-color: $primary-color;
-    color: $primary-color;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px #2563eb66;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -87,10 +101,10 @@ $error-color: #ef4444;
 
   .modeButton {
     padding: 0.75rem 1.5rem;
-    border: 2px solid $border-color;
+    border: 2px solid transparent;
     border-radius: 2rem;
-    background: white;
-    color: $text-primary;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -103,13 +117,12 @@ $error-color: #ef4444;
     .icon {
       font-size: 1.1rem;
       transition: all 0.3s ease;
+      color: white;
     }
 
-    &:hover {
-      border-color: $primary-color;
-      color: $primary-color;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px #2563eb66;
 
       .icon {
         transform: scale(1.1);
@@ -117,8 +130,8 @@ $error-color: #ef4444;
     }
 
     &.active {
-      background: $primary-color;
-      border-color: $primary-color;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-color: transparent;
       color: white;
       box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 
@@ -288,8 +301,10 @@ $error-color: #ef4444;
   margin: 2rem 0;
 
   &:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   .icon {
@@ -749,6 +764,19 @@ $error-color: #ef4444;
     display: flex;
     min-height: 0;
     overflow: hidden;
+    border-radius: 8px;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    transition: all 0.3s ease;
+    
+    &:focus-within {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+    }
+    
+    &:hover {
+      border-color: #555;
+    }
   }
 
   .lineNumbers {
@@ -758,16 +786,18 @@ $error-color: #ef4444;
     bottom: 0;
     width: 40px;
     background: #252525;
-    color: #666;
+    color: #888;
     padding: 1rem 0;
     text-align: right;
-    font-family: monospace;
+    font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
     user-select: none;
     z-index: 1;
     white-space: pre;
-    line-height: 1.5;
+    line-height: 1.6;
     font-size: 14px;
     overflow: hidden;
+    border-right: 1px solid #444;
+    border-radius: 8px 0 0 8px;
   }
 
   .codeEditor {
@@ -777,12 +807,13 @@ $error-color: #ef4444;
     top: 0;
     bottom: 0;
     padding: 1rem;
-    font-family: 'Fira Code', monospace;
+    font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
     font-size: 14px;
-    line-height: 1.5;
-    color: #d4d4d4;
-    background: transparent;
-    border: none;
+    line-height: 1.6;
+    color: #e6e6e6 !important; 
+    background: #1a1a1a !important  ;
+    border: 2px solid #333 !important;
+    border-radius: 8px;
     resize: none;
     outline: none;
     tab-size: 2;
@@ -791,9 +822,60 @@ $error-color: #ef4444;
     overflow-wrap: normal;
     overflow-x: auto;
     overflow-y: scroll;
+    transition: all 0.3s ease;
 
     &::placeholder {
-      color: #666;
+      color: #888;
+      font-style: italic;
+      opacity: 0.8;
+    }
+    
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+      background: #1f1f1f;
+    }
+    
+    &:hover {
+      border-color: #555;
+      background: #1d1d1d;
+    }
+    
+    // Custom scrollbar styling
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #2a2a2a;
+      border-radius: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 6px;
+      border: 2px solid #2a2a2a;
+      
+      &:hover {
+        background: #777;
+      }
+    }
+    
+    &::-webkit-scrollbar-corner {
+      background: #2a2a2a;
+    }
+    
+    // Selection styling
+    &::selection {
+      background: rgba($primary-color, 0.3);
+      color: #fff;
+    }
+    
+    // Better focus ring for accessibility
+    &:focus-visible {
+      outline: 2px solid $primary-color;
+      outline-offset: 2px;
     }
   }
 
@@ -801,17 +883,28 @@ $error-color: #ef4444;
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: #fff;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
     z-index: 3;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fecaca;
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
     }
   }
 }

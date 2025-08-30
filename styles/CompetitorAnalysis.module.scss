@@ -1084,26 +1084,28 @@
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   }
 
   .analyzeButton {
-    background: $primary-color;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
     color: white;
 
     &:hover:not(:disabled) {
-      background: darken($primary-color, 10%);
       transform: translateY(-2px);
+      box-shadow: 0 6px 20px #2563eb66;
     }
   }
 
   .rewriteButton {
-    background: #28a745;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
     color: white;
 
-    &:hover {
-      background: darken(#28a745, 10%);
+    &:hover:not(:disabled) {
       transform: translateY(-2px);
+      box-shadow: 0 6px 20px #2563eb66;
     }
   }
 }
