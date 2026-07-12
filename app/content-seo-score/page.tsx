@@ -19,13 +19,16 @@ export default function ContentScore() {
   const heading = useSelector((s: RootState) => s.editorialDraft.heading);
   const body = useSelector((s: RootState) => s.editorialDraft.body);
   const citabilityScore = useSelector((s: RootState) => s.editorialDraft.citabilityScore);
+  const scoreDone = useSelector((s: RootState) => s.editorialDraft.stageStatus.score === 'completed');
 
   const [status, setStatus] = useState<CouncilStatus>('idle');
   const [result, setResult] = useState<CouncilResultView | null>(null);
 
+  // If we've already scored once, this visit is the re-score stage.
+  const stage = scoreDone ? 'rescore' : 'score';
   useEffect(() => {
-    dispatch(setCurrentStage('score'));
-  }, [dispatch]);
+    dispatch(setCurrentStage(stage));
+  }, [dispatch, stage]);
 
   const handleEvaluate = async () => {
     setStatus('loading');
@@ -39,7 +42,7 @@ export default function ContentScore() {
       const data = (await response.json()) as CouncilResultView;
       setResult(data);
       if (typeof data.score === 'number') dispatch(setContentScore(data.score));
-      dispatch(markStageComplete('score'));
+      dispatch(markStageComplete(stage));
       setStatus('success');
     } catch {
       setStatus('error');
