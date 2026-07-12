@@ -21,6 +21,7 @@ export interface CouncilResult {
   reader: CouncilVoice; // The Reader — human clarity, story, trust
   machine: CouncilVoice; // The Machine — what LLMs parse and cite
   reconciledAction: string;
+  rewrittenContent?: string; // present only for the Rewrite tool
 }
 
 // Lazily instantiated so importing this module (e.g. during `next build` page-data
@@ -40,6 +41,7 @@ export interface RunCouncilOptions {
   task: string; // what this specific tool is analyzing for
   content: string; // the article/draft (plus any tool-specific context)
   requireScore?: boolean; // scoring routes only
+  requireRewrite?: boolean; // Rewrite tool only — also return an improved draft
 }
 
 /**
@@ -48,7 +50,7 @@ export interface RunCouncilOptions {
  * non-regressing number (KTD6); other routes use 0.2.
  */
 export async function runCouncil(opts: RunCouncilOptions): Promise<CouncilResult> {
-  const { task, content, requireScore = false } = opts;
+  const { task, content, requireScore = false, requireRewrite = false } = opts;
 
   const prompt = `${NEWSROOM_PREAMBLE}
 
@@ -59,12 +61,13 @@ Evaluate the content below as a two-voice council and answer as BOTH voices:
 - "machine" — The Machine: argues for LLM consumption (structure, named entities, extractable facts, citability).
 Where the two voices would disagree, give ONE "reconciledAction" the reporter should actually take.
 ${requireScore ? `Also return "score": an integer from ${SCORE_MIN} to ${SCORE_MAX} rating this content's LLM-citability. Anchor it to the rubric consistently so the same content scores the same each run.` : ''}
+${requireRewrite ? 'Also return "rewrittenContent": a full improved version of the article that reconciles both voices.' : ''}
 
 CONTENT:
 ${content}
 
 Return ONLY a JSON object of exactly this shape:
-{ ${requireScore ? '"score": number, ' : ''}"reader": { "take": string, "points": string[] }, "machine": { "take": string, "points": string[] }, "reconciledAction": string }`;
+{ ${requireScore ? '"score": number, ' : ''}${requireRewrite ? '"rewrittenContent": string, ' : ''}"reader": { "take": string, "points": string[] }, "machine": { "take": string, "points": string[] }, "reconciledAction": string }`;
 
   const completion = await getClient().chat.completions.create({
     messages: [{ role: 'user', content: prompt }],

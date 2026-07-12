@@ -1,356 +1,91 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { 
-  FaChartLine, 
-  FaPen, 
-  FaInfoCircle, 
-  FaArrowRight, 
-  FaSearch, 
-  FaTags, 
-  FaLightbulb,
-  FaClock,
-  FaExclamationTriangle
-} from 'react-icons/fa';
-import styles from '@/styles/TrendAlerts.module.scss';
-import AISparkleLoader from '@/components/AISparkleLoader';
+import { FaChartLine, FaRocket, FaArrowRight } from 'react-icons/fa';
+import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import {
-  updateHeading,
-  updateContent,
-  setApiResponse,
-  setLoading,
-  setError,
-  reset,
-} from '@/store/slices/trendAlertsSlice';
+  setDraftHeading,
+  setDraftBody,
+  setCurrentStage,
+  markStageComplete,
+} from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
-
-interface Keyword {
-  text: string;
-  relevance: 'high' | 'medium' | 'low';
-}
-
-interface QuerySuggestion {
-  text: string;
-  relevance: 'high' | 'medium' | 'low';
-  source: 'trending' | 'semantic' | 'related';
-}
 
 export default function TrendAlerts() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const {
-    heading,
-    content,
-    keywords,
-    suggestions,
-    isLoading,
-    error,
-    lastUpdated,
-  } = useSelector((state: RootState) => state.trendAlerts);
+  const heading = useSelector((s: RootState) => s.editorialDraft.heading);
+  const body = useSelector((s: RootState) => s.editorialDraft.body);
 
-  const [wordCount, setWordCount] = useState(0);
+  const [status, setStatus] = useState<CouncilStatus>('idle');
+  const [result, setResult] = useState<CouncilResultView | null>(null);
 
   useEffect(() => {
-    dispatch(reset());
+    dispatch(setCurrentStage('discover'));
   }, [dispatch]);
 
-  useEffect(() => {
-    setWordCount(content.split(/\s+/).filter(word => word.length > 0).length);
-  }, [content]);
-
-  const handleHeadingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateHeading(e.target.value));
-  };
-
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    dispatch(updateContent(e.target.value));
-  };
-
-  const handleAnalyzeContent = async () => {
-    if (!heading.trim() || !content.trim()) {
-      dispatch(setError('Please provide both heading and content'));
-      return;
-    }
-
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-    
+  const run = async () => {
+    setStatus('loading');
     try {
-      const response = await fetch('/api/trend-alerts', {
+      const res = await fetch('/api/trend-alerts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          heading: heading.trim(),
-          content: content.trim(),
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heading, content: body }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to analyze content');
-      }
-
-      const data = await response.json();
-      dispatch(setApiResponse(data));
-    } catch (err) {
-      dispatch(setError(err instanceof Error ? err.message : 'An error occurred'));
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
-
-  const handleRewriteForQuery = (query: string) => {
-    router.push(`/rewrite-for-llm?mode=query&heading=${encodeURIComponent(heading)}&content=${encodeURIComponent(content)}&query=${encodeURIComponent(query)}`);
-  };
-
-  const getRelevanceColor = (relevance: string) => {
-    switch (relevance) {
-      case 'high': return styles.highRelevance;
-      case 'medium': return styles.mediumRelevance;
-      case 'low': return styles.lowRelevance;
-      default: return styles.mediumRelevance;
-    }
-  };
-
-  const getRelevanceDescription = (relevance: string) => {
-    switch (relevance) {
-      case 'high': return 'Highly relevant for LLM citation and AI search optimization';
-      case 'medium': return 'Moderately relevant with good potential for AI systems';
-      case 'low': return 'Lower relevance but may still be useful for broader context';
-      default: return 'Relevance level for AI systems and LLM citation';
-    }
-  };
-
-  const getSourceIcon = (source: string) => {
-    switch (source) {
-      case 'trending': return <FaChartLine />;
-      case 'semantic': return <FaSearch />;
-      case 'related': return <FaLightbulb />;
-      default: return <FaSearch />;
-    }
-  };
-
-  const getSourceLabel = (source: string) => {
-    switch (source) {
-      case 'trending': return 'Trending';
-      case 'semantic': return 'Semantic';
-      case 'related': return 'Related';
-      default: return source;
+      if (!res.ok) throw new Error('failed');
+      setResult((await res.json()) as CouncilResultView);
+      dispatch(markStageComplete('discover'));
+      setStatus('success');
+    } catch {
+      setStatus('error');
     }
   };
 
   return (
-    <div className={styles.container}>
-      {/* Header Section */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.titleSection}>
-            <FaChartLine className={styles.titleIcon} />
-            <div>
-              <h1 className={styles.title}>Trend Alert Analysis</h1>
-              <p className={styles.subtitle}>
-                Extract keywords and discover trending queries to optimize your content for LLM visibility
-              </p>
-            </div>
-          </div>
-          {lastUpdated && (
-            <div className={styles.lastUpdated}>
-              <FaClock />
-              <span>Last updated: {new Date(lastUpdated).toLocaleString()}</span>
-            </div>
-          )}
-        </div>
-      </header>
+    <main style={{ maxWidth: 1000, margin: '0 auto', padding: '2rem 1rem' }}>
+      <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <FaChartLine /> Trends
+      </h1>
+      <p style={{ color: '#6b7280', marginBottom: '1.25rem' }}>
+        Find the angle. Start a new story from a trend, or pressure-test the one you&apos;re drafting.
+      </p>
 
-      {/* Input Section */}
-      <section className={styles.inputSection}>
-        <div className={styles.inputCard}>
-          <h2 className={styles.sectionTitle}>
-            <FaPen className={styles.icon} />
-            Content Input
-          </h2>
-          
-          <div className={styles.inputGroup}>
-            <label className={styles.label}>
-              <FaPen className={styles.icon} />
-              Article Heading
-            </label>
-            <input
-              type="text"
-              value={heading}
-              onChange={handleHeadingChange}
-              placeholder="Enter your article heading..."
-              className={styles.input}
-            />
-          </div>
+      <input
+        type="text"
+        value={heading}
+        onChange={(e) => dispatch(setDraftHeading(e.target.value))}
+        placeholder="Working headline (e.g. India fintech funding rebounds)..."
+        style={{ width: '100%', padding: '0.6rem', marginBottom: '0.75rem' }}
+      />
+      <textarea
+        value={body}
+        onChange={(e) => dispatch(setDraftBody(e.target.value))}
+        placeholder="Optional: paste an early draft, or leave blank to start from a trend..."
+        rows={8}
+        style={{ width: '100%', padding: '0.6rem', marginBottom: '1rem' }}
+      />
+      <button className="ce-primary-btn" onClick={run} disabled={status === 'loading' || (!heading.trim() && !body.trim())}>
+        <FaRocket /> {status === 'loading' ? 'Convening the council...' : 'Find trending angles'}
+      </button>
 
-          <div className={styles.inputGroup}>
-            <label className={styles.label}>
-              <FaPen className={styles.icon} />
-              Article Content
-              <span className={styles.wordCount}>{wordCount} words</span>
-            </label>
-            <textarea
-              value={content}
-              onChange={handleContentChange}
-              placeholder="Enter your article content..."
-              className={styles.textarea}
-              rows={8}
-            />
-          </div>
+      <div style={{ marginTop: '1.5rem' }}>
+        <CouncilVerdict status={status} result={result} onRetry={run} idleHint="Run Trends to hear from The Reader and The Machine." />
+      </div>
 
-          <button
-            className={styles.analyzeButton}
-            onClick={handleAnalyzeContent}
-            disabled={isLoading || !heading.trim() || !content.trim()}
-          >
-            <FaChartLine />
-            {isLoading ? 'Analyzing Content...' : 'Analyze Content'}
-          </button>
-
-          {/* AI Sparkle Loader */}
-          <AISparkleLoader isLoading={isLoading} />
-        </div>
-      </section>
-
-      {/* Error Display */}
-      {error && (
-        <section className={styles.errorSection}>
-          <div className={styles.errorCard}>
-            <FaExclamationTriangle className={styles.errorIcon} />
-            <span>{error}</span>
-          </div>
-        </section>
+      {status === 'success' && (
+        <button
+          className="ce-primary-btn"
+          style={{ marginTop: '1.5rem' }}
+          onClick={() => {
+            dispatch(setCurrentStage('score'));
+            router.push('/content-seo-score');
+          }}
+        >
+          <FaArrowRight /> Draft &amp; score this
+        </button>
       )}
-
-      {/* Keywords Section */}
-      {keywords.length > 0 && (
-        <section className={styles.keywordsSection}>
-          <div className={styles.keywordsCard}>
-            <h2 className={styles.sectionTitle}>
-              <FaTags className={styles.icon} />
-              Extracted Keywords
-              <span className={styles.count}>({keywords.length})</span>
-              <div className={styles.contextTooltip}>
-                <FaInfoCircle className={styles.tooltipIcon} />
-                <span className={styles.tooltipText}>Keywords ranked by relevance to your content and their potential for LLM citation and AI search optimization.</span>
-              </div>
-            </h2>
-            <div className={styles.keywordsGrid}>
-              {keywords.map((keyword: Keyword, index: number) => (
-                <div key={index} className={styles.keywordChip}>
-                  <span className={styles.keywordText}>{keyword.text}</span>
-                  <div className={styles.relevanceContainer}>
-                    <span className={`${styles.relevanceBadge} ${getRelevanceColor(keyword.relevance)}`}>
-                      {keyword.relevance}
-                    </span>
-                    <div className={styles.contextTooltip}>
-                      <FaInfoCircle className={styles.tooltipIcon} />
-                      <span className={styles.tooltipText}>{getRelevanceDescription(keyword.relevance)}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Query Suggestions Section */}
-      {suggestions.length > 0 && (
-        <section className={styles.suggestionsSection}>
-          <div className={styles.suggestionsCard}>
-            <h2 className={styles.sectionTitle}>
-              <FaSearch className={styles.icon} />
-              Query Suggestions
-              <span className={styles.count}>({suggestions.length})</span>
-              <div className={styles.contextTooltip}>
-                <FaInfoCircle className={styles.tooltipIcon} />
-                <span className={styles.tooltipText}>Query suggestions based on trending patterns, semantic analysis, and related content that users might ask LLMs.</span>
-              </div>
-            </h2>
-            <div className={styles.suggestionsGrid}>
-              {suggestions.map((suggestion: QuerySuggestion, index: number) => (
-                <div key={index} className={styles.suggestionCard}>
-                  <div className={styles.suggestionHeader}>
-                    <div className={styles.suggestionMeta}>
-                      <div className={styles.relevanceContainer}>
-                        <span className={`${styles.relevanceBadge} ${getRelevanceColor(suggestion.relevance)}`}>
-                          {suggestion.relevance}
-                        </span>
-                        <div className={styles.contextTooltip}>
-                          <FaInfoCircle className={styles.tooltipIcon} />
-                          <span className={styles.tooltipText}>{getRelevanceDescription(suggestion.relevance)}</span>
-                        </div>
-                      </div>
-                      <div className={styles.sourceContainer}>
-                        <span className={styles.sourceBadge}>
-                          {getSourceIcon(suggestion.source)}
-                          {getSourceLabel(suggestion.source)}
-                        </span>
-                        <div className={styles.contextTooltip}>
-                          <FaInfoCircle className={styles.tooltipIcon} />
-                          <span className={styles.tooltipText}>
-                            {suggestion.source === 'trending' && 'Based on current trending topics and popular search patterns'}
-                            {suggestion.source === 'semantic' && 'Derived from semantic analysis of your content and related concepts'}
-                            {suggestion.source === 'related' && 'Generated from related content and topic associations'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.queryText}>
-                    {suggestion.text}
-                  </div>
-                  
-                  <button
-                    className={styles.rewriteButton}
-                    onClick={() => handleRewriteForQuery(suggestion.text)}
-                  >
-                    <FaArrowRight />
-                    Rewrite for this query
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Info Section */}
-      <section className={styles.infoSection}>
-        <div className={styles.infoCard}>
-          <div className={styles.infoHeader}>
-            <FaInfoCircle className={styles.infoIcon} />
-            <h3>How it works</h3>
-          </div>
-          <div className={styles.infoContent}>
-            <p>
-                             Our AI analyzes your content to extract the most important keywords and generate 
-               query suggestions that users might ask. Each suggestion includes a &quot;Rewrite&quot; button 
-               that takes you to our LLM optimization tool to create content specifically for that query.
-            </p>
-            <div className={styles.infoGrid}>
-              <div className={styles.infoItem}>
-                <FaTags />
-                <span>Keywords are ranked by relevance to your content</span>
-              </div>
-              <div className={styles.infoItem}>
-                <FaSearch />
-                <span>Query suggestions are based on trending and semantic analysis</span>
-              </div>
-              <div className={styles.infoItem}>
-                <FaArrowRight />
-                <span>Use the rewrite feature to optimize for specific queries</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+    </main>
   );
-} 
+}

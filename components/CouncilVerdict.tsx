@@ -15,6 +15,7 @@ export interface CouncilResultView {
   reader: CouncilVoice;
   machine: CouncilVoice;
   reconciledAction: string;
+  rewrittenContent?: string;
 }
 
 export type CouncilStatus = 'idle' | 'loading' | 'error' | 'success';

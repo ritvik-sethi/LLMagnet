@@ -124,3 +124,27 @@ button i, .btn i, [role="button"] i {
   background-color: #ffffff !important;
   color: #171717 !important;
 }
+
+/* Shared primary button for pipeline-wired tool pages */
+.ce-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ce-primary-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+.ce-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
