@@ -1,53 +1,69 @@
-// LLMagnet — newsroom IDE tokens (sharp, mono chrome, no purple glow)
+// LLMagnet — AI SaaS edit tokens (assertive coral primary + checked paper)
 
-$primary-color: #0f766e; // teal ink
-$primary-hover: #0d9488;
-$secondary-color: #b45309; // amber desk accent
-$text-primary: #121212;
-$text-secondary: #52525b;
-$text-dark: #09090b;
-$text-muted: #71717a;
+$primary-color: #ea4b2b;
+$primary-hover: #d43f22;
+$secondary-color: #0c1222;
+$text-primary: #0c1222;
+$text-secondary: #475569;
+$text-dark: #020617;
+$text-muted: #64748b;
 $background-light: #f4f4f5;
-$background-dark: #18181b;
-$border-color: #d4d4d8;
-$success-color: #15803d;
-$warning-color: #a16207;
-$error-color: #b91c1c;
+$background-dark: #0f172a;
+$border-color: #e2e8f0;
+$success-color: #059669;
+$warning-color: #d97706;
+$error-color: #dc2626;
 
-$ink: #121212;
+$ink: #0c1222;
 $paper: #f7f6f2;
-$grid: rgba(18, 18, 18, 0.06);
-$mono-stack: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-$sans-stack: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+$grid: rgba(18, 18, 18, 0.07);
+$mono-stack: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+$sans-stack: var(--font-space-grotesk), 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
 
-$card-shadow: none;
-$box-shadow: none;
-$radius: 2px;
+$card-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+$box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.28);
+$radius: 10px;
+$radius-sm: 8px;
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
 @mixin primary-button {
-  background: $ink;
-  color: #fafafa;
-  padding: 0.65rem 1.1rem;
-  border-radius: $radius;
-  border: 1px solid $ink;
-  font-family: $mono-stack;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  background: $primary-color;
+  color: #fffaf8;
+  padding: 0.72rem 1.2rem;
+  border-radius: $radius-sm;
+  border: 1px solid $primary-color;
+  font-family: $sans-stack;
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.2s $ease-out,
+    box-shadow 0.2s $ease-out,
+    background 0.2s $ease-out,
+    border-color 0.2s $ease-out;
+  box-shadow: 0 8px 20px -12px rgba(234, 75, 43, 0.65);
 
   &:hover:not(:disabled) {
-    background: transparent;
-    color: $ink;
+    transform: translateY(-1px);
+    background: $primary-hover;
+    border-color: $primary-hover;
+    box-shadow: 0 14px 28px -14px rgba(234, 75, 43, 0.7);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   &:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   .icon {
@@ -57,23 +73,29 @@ $radius: 2px;
 }
 
 @mixin secondary-button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.72);
   color: $ink;
-  padding: 0.65rem 1.1rem;
-  border-radius: $radius;
-  border: 1px solid $ink;
-  font-family: $mono-stack;
-  font-size: 0.8rem;
-  font-weight: 500;
+  padding: 0.72rem 1.2rem;
+  border-radius: $radius-sm;
+  border: 1px solid $border-color;
+  font-family: $sans-stack;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.2s $ease-out,
+    background 0.2s $ease-out,
+    border-color 0.2s $ease-out,
+    box-shadow 0.2s $ease-out;
 
   &:hover:not(:disabled) {
-    background: $ink;
-    color: #fafafa;
+    background: #fff;
+    border-color: rgba(234, 75, 43, 0.45);
+    box-shadow: 0 8px 20px -14px rgba(234, 75, 43, 0.4);
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -88,6 +110,9 @@ $radius: 2px;
 }
 
 @mixin glass-effect {
-  background: rgba(247, 246, 242, 0.92);
-  border: 1px solid $border-color;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: $card-shadow;
 }

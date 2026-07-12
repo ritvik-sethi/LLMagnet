@@ -5,6 +5,11 @@ import { searchTopic, hostnameOf, type SearchHit } from '../_shared/webSearch';
 import { scrapeMany } from '../_shared/scrape';
 import { runCouncil } from '../_shared/council';
 import { classifyEditorialContent } from '../_shared/articleGate';
+import {
+  formatPipelineContext,
+  type AdvicePayload,
+  type LiveCheckPayload,
+} from '../_shared/pipelineContext';
 
 export const maxDuration = 120;
 
@@ -129,7 +134,8 @@ Rules:
 
 export async function POST(request: Request) {
   try {
-    const { heading, content, competitorUrls, sourceUrl } = await request.json();
+    const { heading, content, competitorUrls, sourceUrl, score, liveCheck, advice } =
+      await request.json();
     const title = ((heading as string) || '').trim();
     const article = (content as string) || '';
 
@@ -196,7 +202,7 @@ export async function POST(request: Request) {
               `--- RIVAL ${i + 1}: ${s.title}\nSITE: ${hostnameOf(s.url)}\nURL: ${s.url}\n${s.text.slice(0, 4500)}`
           )
           .join('\n\n')
-      : '(No rival pages could be scraped after excluding the source outlet — still infer gaps a strong competing desk would cover.)';
+      : '(No rival pages could be scraped after excluding the source outlet — still infer gaps a strong competing outlet would cover.)';
 
     const queryBlock = [
       'GOOGLE-STYLE SEARCHES:',
@@ -207,12 +213,21 @@ export async function POST(request: Request) {
     ].join('\n');
 
     // 4) Gap analysis — how OUR article holds up vs what rivals covered
+    const prior = formatPipelineContext({
+      score: typeof score === 'number' ? score : null,
+      liveCheck: liveCheck as LiveCheckPayload | null,
+      advice: advice as AdvicePayload | null,
+    });
+
     const result = await runCouncil({
       tool: 'competitor',
       content: `OUR HEADLINE: ${title}
 
 OUR ARTICLE:
 ${article}
+
+=== PRIOR PIPELINE CONTEXT (use to prioritize gaps) ===
+${prior}
 
 EXCLUDED SOURCE SITE(S) (do not treat as rivals): ${[...blocked].join(', ') || 'none'}
 
@@ -222,7 +237,7 @@ ${queryBlock}
 SCRAPED RIVAL ARTICLES (other outlets only):
 ${competitorBlock}
 
-TASK: Dig deep. Compare OUR piece against rivals on facts, angles, numbers, quotes, timelines, and LLM-answer readiness. Flag what rivals have that we still lack — and what we uniquely own.`,
+TASK: Dig deep. Compare OUR piece against rivals on facts, angles, numbers, quotes, timelines, and LLM-answer readiness. Flag what rivals have that we still lack — and what we uniquely own. Prioritize gaps that prior Live check / Advice already flagged.`,
     });
 
     return NextResponse.json({

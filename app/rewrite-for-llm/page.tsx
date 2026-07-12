@@ -3,16 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { FaPenFancy, FaRocket, FaArrowRight, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaPenFancy, FaRocket, FaArrowRight, FaExternalLinkAlt, FaLink } from 'react-icons/fa';
 import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import WowNote from '@/components/WowNote';
 import {
   setDraftHeading,
   setDraftBody,
+  setSourceUrl,
   applyRewrittenBody,
   setCurrentStage,
   markStageComplete,
   stagePath,
+  lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
 
@@ -46,26 +48,69 @@ export default function RewriteForLLM() {
   const router = useRouter();
   const heading = useSelector((s: RootState) => s.editorialDraft.heading);
   const body = useSelector((s: RootState) => s.editorialDraft.body);
+  const score = useSelector((s: RootState) => s.editorialDraft.citabilityScore);
+  const liveCheck = useSelector((s: RootState) => s.editorialDraft.liveCheck);
+  const advice = useSelector((s: RootState) => s.editorialDraft.advice);
+  const sourceUrl = useSelector((s: RootState) => s.editorialDraft.sourceUrl);
 
   const [status, setStatus] = useState<CouncilStatus>('idle');
   const [result, setResult] = useState<RewriteResult | null>(null);
   const [phase, setPhase] = useState('');
+  const [urlInput, setUrlInput] = useState(sourceUrl || '');
+  const [fetching, setFetching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(setCurrentStage('rewrite'));
   }, [dispatch]);
 
+  useEffect(() => {
+    if (sourceUrl && !urlInput) setUrlInput(sourceUrl);
+  }, [sourceUrl, urlInput]);
+
+  const hasPrior =
+    score != null ||
+    Boolean(liveCheck?.liveVerdict) ||
+    Boolean(advice?.rewritePitch) ||
+    (advice?.humanSuggestions?.length ?? 0) > 0 ||
+    (advice?.machineSuggestions?.length ?? 0) > 0;
+
+  const fetchFromUrl = async () => {
+    setFetchError(null);
+    setFetching(true);
+    setResult(null);
+    setStatus('idle');
+    try {
+      const res = await fetch('/api/fetch-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fetch failed');
+      if (data.title) dispatch(setDraftHeading(data.title));
+      dispatch(setDraftBody(data.content));
+      dispatch(setSourceUrl(data.url));
+      dispatch(lockStartedFrom());
+    } catch (e) {
+      setFetchError(e instanceof Error ? e.message : 'Could not load that article');
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const run = async () => {
+    dispatch(lockStartedFrom());
     setStatus('loading');
     setPhase('Pulling claims from your draft…');
     const t1 = setTimeout(() => setPhase('Searching the web for each claim…'), 3500);
     const t2 = setTimeout(() => setPhase('Reading sources & densifying the piece…'), 10000);
-    const t3 = setTimeout(() => setPhase('Indian business desk polish…'), 18000);
+    const t3 = setTimeout(() => setPhase('Indian business article polish…'), 18000);
     try {
       const res = await fetch('/api/rewrite-for-llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ heading, content: body }),
+        body: JSON.stringify({ heading, content: body, score, liveCheck, advice }),
       });
       if (!res.ok) throw new Error('failed');
       setResult((await res.json()) as RewriteResult);
@@ -91,20 +136,86 @@ export default function RewriteForLLM() {
 
   return (
     <main className="desk-page">
-      <p className="desk-kicker">Step 5 of 6 · Polish the copy</p>
+      <p className="desk-kicker">Step 5 of 6 · Polish the article</p>
       <h1 className="desk-title">
-        <FaPenFancy /> Indian business desk polish
+        <FaPenFancy /> Polish the article
       </h1>
       <p className="desk-lede">
-        A senior Indian business newsroom editor verifies your claims on the web, then rewrites for
-        denser facts, sharper framing, and careful market speculation — without labelling opinions
-        in the copy.
+        A senior Indian business editor verifies your claims on the web, then rewrites for denser
+        facts, sharper framing, and careful market speculation — without labelling opinions in the
+        copy. Prior score, Live check, and Advice feed this rewrite.
       </p>
 
       <WowNote label="Wow">
-        <strong>Claim → Google → fuller rewrite</strong> under an Indian business-desk voice. Clean
-        polished article; at the end, a plain list of what was added.
+        <strong>Claim → Google → fuller rewrite</strong> in an Indian business-news voice. Clean
+        polished article; at the end, a plain list of what was added — not a colour markup pass.
       </WowNote>
+
+      {hasPrior && (
+        <div className="desk-panel" style={{ marginBottom: '1rem' }}>
+          <p className="desk-label" style={{ marginBottom: 6 }}>
+            Carrying forward from earlier steps
+          </p>
+          <p className="desk-meta" style={{ margin: 0 }}>
+            {score != null ? `Citeability ${score}/100` : 'Score not run'}
+            {liveCheck?.liveVerdict ? ' · Live check loaded' : ''}
+            {advice?.rewritePitch || (advice?.humanSuggestions?.length ?? 0) > 0
+              ? ' · Advice loaded'
+              : ''}
+          </p>
+          {advice?.reconciledAction && (
+            <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>{advice.reconciledAction}</p>
+          )}
+        </div>
+      )}
+
+      {!hasPrior && (
+        <p className="desk-meta" style={{ marginBottom: '1rem' }}>
+          Tip: run Score → Live check → Advice first so this polish inherits that context — or paste
+          a published URL below to load an article here.
+        </p>
+      )}
+
+      <div className="desk-panel" style={{ marginBottom: '1rem' }}>
+        <label className="desk-label">
+          <FaLink style={{ marginRight: 6 }} />
+          Paste a published article link
+        </label>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            className="desk-field"
+            type="url"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && urlInput.trim() && !fetching) {
+                e.preventDefault();
+                void fetchFromUrl();
+              }
+            }}
+            placeholder="https://example.com/your-story"
+            style={{ flex: 1, minWidth: 220, marginBottom: 0 }}
+          />
+          <button
+            className="ce-primary-btn"
+            type="button"
+            disabled={fetching || !urlInput.trim()}
+            onClick={fetchFromUrl}
+          >
+            {fetching ? 'Pulling article…' : 'Import article'}
+          </button>
+        </div>
+        {fetchError && (
+          <p className="desk-meta" style={{ color: '#b91c1c', marginTop: 8 }}>
+            {fetchError}
+          </p>
+        )}
+        {sourceUrl && !fetchError && (
+          <p className="desk-meta" style={{ color: '#15803d', marginTop: 8 }}>
+            Loaded from {sourceUrl}
+          </p>
+        )}
+      </div>
 
       <label className="desk-label">Headline</label>
       <input
@@ -233,14 +344,17 @@ export default function RewriteForLLM() {
           status={status}
           result={result}
           onRetry={run}
-          idleHint="Research claims on the web, then get a full Indian business-desk rewrite."
+          loadingFlow="rewrite"
+          idleHint="Research claims on the web, then get a full Indian business rewrite."
         />
       </div>
 
       {status === 'success' && result?.rewrittenContent && (
-        <button className="ce-primary-btn" style={{ marginTop: '1rem' }} onClick={applyRewrite}>
-          <FaArrowRight /> Accept polish &amp; check rivals
-        </button>
+        <div style={{ marginTop: '1rem' }}>
+          <button className="ce-primary-btn" type="button" onClick={applyRewrite}>
+            <FaArrowRight /> Accept polish &amp; check rivals
+          </button>
+        </div>
       )}
     </main>
   );

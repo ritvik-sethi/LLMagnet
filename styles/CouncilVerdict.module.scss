@@ -6,12 +6,28 @@
   color: $text-secondary;
   border: 1px dashed $border-color;
   border-radius: $radius;
-  font-family: $mono-stack;
-  font-size: 0.82rem;
-  background: rgba(255, 255, 255, 0.65);
+  font-family: $sans-stack;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: $card-shadow;
+  animation: deskEnter 0.35s $ease-out both;
+}
+.loadingShell {
+  margin-top: 0.25rem;
+  animation: deskEnter 0.35s $ease-out both;
+}
+@keyframes deskEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .idle {
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.65);
 }
 .error {
   border-color: $error-color;
@@ -27,6 +43,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  animation: deskEnter 0.4s $ease-out both;
 }
 
 .voiceLabel {
@@ -88,7 +105,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #5eead4;
+    color: #ff8f78;
     margin-right: 0.4rem;
   }
 }
@@ -201,53 +218,139 @@
 }
 
 .matrix {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid $ink;
-  border-radius: 0;
-  padding: 1rem 1.15rem;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 1.2rem 1.2rem 1.25rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+.matrixAmbient {
+  position: absolute;
+  inset: -40% auto auto -15%;
+  width: 55%;
+  height: 75%;
+  background: radial-gradient(circle at 35% 40%, rgba(234, 75, 43, 0.07), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .matrixHead {
+  position: relative;
+  z-index: 1;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.9rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.05rem;
+}
+
+.matrixHeadLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-width: 0;
+
+  svg {
+    margin-top: 0.2rem;
+    color: $primary-color;
+    flex-shrink: 0;
+  }
 
   h3 {
     margin: 0;
     font-family: $mono-stack;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    flex: 1;
+    color: $ink;
   }
+}
 
-  svg {
-    color: $primary-color;
-  }
+.matrixLede {
+  margin: 0.28rem 0 0;
+  font-family: $sans-stack;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: #64748b;
+  text-transform: none;
+  line-height: 1.4;
+}
+
+.matrixTotalWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.matrixTotalLabel {
+  font-family: $mono-stack;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
 
 .matrixTotal {
   font-family: $mono-stack;
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: $ink;
-  border: 1px solid $ink;
-  padding: 0.2rem 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  padding: 0.3rem 0.55rem;
   font-variant-numeric: tabular-nums;
+  background: #fff;
+  letter-spacing: -0.02em;
 }
 
 .matrixGrid {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
 }
 
 .matrixCard {
-  background: $paper;
-  border-radius: 0;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid $border-color;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  transition: border-color 0.2s $ease-out, box-shadow 0.2s $ease-out, transform 0.2s $ease-out;
+
+  &:hover {
+    border-color: rgba(15, 23, 42, 0.18);
+    box-shadow: 0 12px 28px -22px rgba(15, 23, 42, 0.35);
+    transform: translateY(-1px);
+  }
+}
+
+.tone_weak {
+  border-color: rgba(234, 75, 43, 0.28);
+  background: linear-gradient(180deg, rgba(255, 248, 246, 0.95), #fff);
+
+  .barFill {
+    background: $primary-color;
+  }
+}
+
+.tone_mid {
+  .barFill {
+    background: #334155;
+  }
+}
+
+.tone_strong {
+  .barFill {
+    background: #0c1222;
+  }
 }
 
 .matrixCardTop {
@@ -255,22 +358,42 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.matrixIndex {
+  font-family: $mono-stack;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
 }
 
 .matrixLabel {
-  font-size: 0.82rem;
-  font-weight: 600;
+  flex: 1;
+  min-width: 8rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   color: $text-primary;
+}
+
+.matrixExplain {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: $text-secondary;
 }
 
 .matrixScore {
   font-family: $mono-stack;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 700;
+  font-size: 1rem;
   color: $text-primary;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 
   small {
     font-weight: 500;
@@ -281,24 +404,60 @@
 
 .bar {
   height: 3px;
-  background: $border-color;
-  border-radius: 0;
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
   overflow: hidden;
   margin-bottom: 0.4rem;
 }
 
 .barFill {
   height: 100%;
+  border-radius: inherit;
   background: $ink;
-  border-radius: 0;
+}
+
+.matrixBarMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+  font-family: $mono-stack;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.chip_weak,
+.chip_mid,
+.chip_strong {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 650;
+}
+
+.chip_weak {
+  color: $primary-color;
+}
+
+.chip_mid {
+  color: #64748b;
+}
+
+.chip_strong {
+  color: #0c1222;
 }
 
 .matrixNote {
   margin: 0;
+  padding: 0.55rem 0.65rem;
   font-size: 0.78rem;
-  line-height: 1.4;
-  color: $text-secondary;
+  line-height: 1.45;
+  color: #475569;
   font-family: $mono-stack;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 8px;
+  border-left: 2px solid rgba(234, 75, 43, 0.35);
 }
 
 .artifacts {
@@ -395,7 +554,7 @@
 
   svg {
     margin-top: 0.2rem;
-    color: #5eead4;
+    color: #ff8f78;
     flex-shrink: 0;
   }
 
@@ -404,7 +563,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #5eead4;
+    color: #ff8f78;
     margin-right: 0.35rem;
   }
 }

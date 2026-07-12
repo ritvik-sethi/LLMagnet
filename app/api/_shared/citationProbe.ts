@@ -20,6 +20,8 @@ export interface CitationProbeResult {
   notes: string;
   claimsItWouldQuote: string[];
   ok: boolean;
+  /** True when provider is intentionally not run (e.g. no GEMINI_API_KEY). */
+  skipped?: boolean;
   rejectedAsInvalid?: boolean;
   error?: string;
 }
@@ -31,13 +33,15 @@ function getOpenAI() {
   });
 }
 
-/** Shared desk rubric for live citation probes (Google E-E-A-T + LLM cite research). */
+/** Shared edit rubric for live citation probes (Google E-E-A-T + LLM cite research). */
 const PROBE_RUBRIC = `You are judging whether YOU would CITE or QUOTE this piece when answering a user.
+
+IMPORTANT: Respond with a single valid JSON object only (no markdown fences).
 
 Score ONLY between ${CITE_SCORE_MIN} and ${CITE_SCORE_MAX}. Do not invent a fake middle score.
 Use editorial judgment — two similar drafts can differ by a few points; avoid always landing on 70 or 75.
 
-If the paste is NOT a real news / business article (gibberish, Wikipedia dump, social post, product page, homework, code, etc.), return:
+If the paste is NOT a real news / business article (gibberish, Wikipedia dump, social post, product page, homework, code, etc.), return this JSON:
 {
   "invalidInput": true,
   "message": "${INVALID_INPUT_MESSAGE}",
@@ -47,12 +51,12 @@ If the paste is NOT a real news / business article (gibberish, Wikipedia dump, s
   "claimsItWouldQuote": []
 }
 
-Otherwise return:
+Otherwise return this JSON:
 {
   "invalidInput": false,
   "wouldCite": boolean,
   "score": number,
-  "notes": "2–3 polite but frank sentences: what you'd quote vs what a desk editor would still ask for",
+  "notes": "2–3 polite but frank sentences: what you'd quote vs what an editor would still ask for",
   "claimsItWouldQuote": ["up to 3 short quotes or paraphrases you might use"]
 }
 
@@ -69,7 +73,7 @@ Band guidance (arbitrary within range is fine):
 - 67–76: solid reported piece with some quotable lines; room to densify.
 - 77–${CITE_SCORE_MAX}: dense, attributable, extractable — you'd actually cite it.
 
-Tone of notes: very polite, collegial, gently critical. Never insult the writer. Prefer "you could strengthen…" / "a desk might still want…".
+Tone of notes: very polite, collegial, gently critical. Never insult the writer. Prefer "you could strengthen…" / "an editor might still want…".
 Do not invent facts.`;
 
 async function probeOpenAI(title: string, content: string): Promise<CitationProbeResult> {
@@ -100,7 +104,7 @@ HEADLINE: ${title}
 ARTICLE:
 ${content.slice(0, 6000)}
 
-Imagine a user asks: "What should I know about this story?" Be honest about citeability.`,
+Imagine a user asks: "What should I know about this story?" Be honest about citeability. Return JSON.`,
         },
       ],
     });
@@ -151,14 +155,15 @@ Imagine a user asks: "What should I know about this story?" Be honest about cite
 async function probeGemini(title: string, content: string): Promise<CitationProbeResult> {
   const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
   if (!key) {
+    // Gemini optional for now — skip quietly (no error UI)
     return {
       provider: 'gemini',
-      score: CITE_SCORE_MIN,
+      score: 0,
       wouldCite: false,
-      notes: 'GEMINI_API_KEY not set — skipped Gemini citation probe.',
+      notes: '',
       claimsItWouldQuote: [],
       ok: false,
-      error: 'missing_key',
+      skipped: true,
     };
   }
 
@@ -252,23 +257,22 @@ export async function runCitationProbes(
   evidenceBlock: string;
   rejectedAsInvalid: boolean;
 }> {
-  const [openai, gemini] = await Promise.all([
-    probeOpenAI(title, content),
-    probeGemini(title, content),
-  ]);
+  // OpenAI is required; Gemini only runs when GEMINI_API_KEY is set
+  const openai = await probeOpenAI(title, content);
+  const gemini = await probeGemini(title, content);
 
   const rejectedAsInvalid = Boolean(
-    openai.rejectedAsInvalid || gemini.rejectedAsInvalid
+    openai.rejectedAsInvalid || (!gemini.skipped && gemini.rejectedAsInvalid)
   );
 
-  const okScores = [openai, gemini].filter((p) => p.ok).map((p) => p.score);
+  const okScores = [openai, gemini].filter((p) => p.ok && !p.skipped).map((p) => p.score);
   const blendedScore = clampCiteScore(
     okScores.length
       ? okScores.reduce((a, b) => a + b, 0) / okScores.length
       : CITE_SCORE_MIN + 5
   );
 
-  const evidenceBlock = [
+  const evidenceLines = [
     '=== LIVE LLM CITATION PROBES (score must reflect these — not a stuck midpoint) ===',
     `OpenAI: score=${openai.score}/${CITE_SCORE_MAX} band · wouldCite=${openai.wouldCite} · ok=${openai.ok}`,
     openai.notes ? `OpenAI notes: ${openai.notes}` : '',
@@ -276,17 +280,27 @@ export async function runCitationProbes(
       ? `OpenAI would quote: ${openai.claimsItWouldQuote.join(' | ')}`
       : '',
     openai.error ? `OpenAI probe: ${openai.error}` : '',
-    `Gemini: score=${gemini.score}/${CITE_SCORE_MAX} band · wouldCite=${gemini.wouldCite} · ok=${gemini.ok}`,
-    gemini.notes ? `Gemini notes: ${gemini.notes}` : '',
-    gemini.claimsItWouldQuote.length
-      ? `Gemini would quote: ${gemini.claimsItWouldQuote.join(' | ')}`
-      : '',
-    gemini.error ? `Gemini probe: ${gemini.error}` : '',
+  ];
+
+  if (!gemini.skipped) {
+    evidenceLines.push(
+      `Gemini: score=${gemini.score}/${CITE_SCORE_MAX} band · wouldCite=${gemini.wouldCite} · ok=${gemini.ok}`,
+      gemini.notes ? `Gemini notes: ${gemini.notes}` : '',
+      gemini.claimsItWouldQuote.length
+        ? `Gemini would quote: ${gemini.claimsItWouldQuote.join(' | ')}`
+        : '',
+      gemini.error ? `Gemini probe: ${gemini.error}` : ''
+    );
+  } else {
+    evidenceLines.push('Gemini: skipped (no GEMINI_API_KEY) — score from OpenAI probe only.');
+  }
+
+  evidenceLines.push(
     `Blended probe score (pre-council): ${blendedScore}`,
-    'Desk rule: stay polite-critical; use editorial judgment inside the 60–85 band; never invent facts.',
-  ]
-    .filter(Boolean)
-    .join('\n');
+    'Edit rule: stay polite-critical; use editorial judgment inside the 60–85 band; never invent facts.'
+  );
+
+  const evidenceBlock = evidenceLines.filter(Boolean).join('\n');
 
   return { openai, gemini, blendedScore, evidenceBlock, rejectedAsInvalid };
 }

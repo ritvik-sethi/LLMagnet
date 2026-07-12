@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { FaBrain, FaFileAlt, FaRocket, FaArrowRight } from 'react-icons/fa';
+import { FaBrain, FaArrowRight } from 'react-icons/fa';
 import styles from '@/styles/ContentScore.module.scss';
 import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import WowNote from '@/components/WowNote';
@@ -14,6 +14,7 @@ import {
   setCurrentStage,
   markStageComplete,
   stagePath,
+  lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
 
@@ -24,6 +25,7 @@ interface ProbeSide {
   notes: string;
   claimsItWouldQuote: string[];
   ok: boolean;
+  skipped?: boolean;
   error?: string;
 }
 
@@ -51,6 +53,7 @@ export default function ContentScore() {
   }, [dispatch]);
 
   const handleEvaluate = async () => {
+    dispatch(lockStartedFrom());
     setStatus('loading');
     setErrorMsg('');
     try {
@@ -63,7 +66,7 @@ export default function ContentScore() {
       if (!response.ok) {
         setErrorMsg(
           (data && data.error) ||
-            'ENTER A VALID PROMPT LINK — this desk only scores real news articles.'
+            'ENTER A VALID PROMPT LINK — this tool only scores real news articles.'
         );
         setResult(null);
         setStatus('error');
@@ -83,80 +86,82 @@ export default function ContentScore() {
     <div className={styles.container}>
       <header className={styles.header}>
         <p className="desk-kicker" style={{ textAlign: 'left' }}>
-          Step 2 of 6 · How citeable is this?
+          Step 2 of 6 · Score citeability
         </p>
         <h1 className={styles.title}>
           <FaBrain className={styles.icon} />
-          Score your news article for AI citations
+          Score citeability
         </h1>
         <p className={styles.subtitle}>
-          We ask OpenAI and Gemini whether they would cite this piece, then score between 60 and 85 —
-          grounded in E-E-A-T trust signals and real LLM citation research. News articles only.
+          Live OpenAI citation probe + editor matrix. We can judge Gemini, Grok, Meta AI, and
+          Perplexity the same way — this demo just doesn’t have those keys wired in yet.
         </p>
       </header>
 
-      <WowNote label="Wow">
-        Score moves with <strong>live OpenAI + Gemini citation probes</strong> and a deep desk
-        matrix — not a stuck middle number. Gibberish, Wikipedia dumps, and social posts get{' '}
-        <strong>ENTER A VALID PROMPT LINK</strong> instead of a fake score.
+      <WowNote label="Demo">
+        OpenAI is live in this build. We can run the same citeability judgment for{' '}
+        <strong>Gemini, Grok, Meta AI, and Perplexity</strong> too — we simply haven’t purchased those
+        API keys for this demo.
       </WowNote>
 
-      <div className={styles.inputContainer}>
-        <div className={styles.headingInput}>
-          <label className={styles.headingLabel}>
-            <FaFileAlt className={styles.icon} />
-            Article Title
-          </label>
-          <div className={styles.inputWrapper}>
-            <input
-              type="text"
-              className={styles.headingField}
-              value={heading}
-              onChange={(e) => dispatch(setDraftHeading(e.target.value))}
-              placeholder="e.g. Zepto raises $665M as quick-commerce heats up in India"
-            />
-          </div>
-        </div>
-
-        <div className={styles.editor}>
-          <textarea
-            id="content-editor"
-            className={styles.textArea}
-            value={body}
-            onChange={(e) => dispatch(setDraftBody(e.target.value))}
-            placeholder="Paste a full news / business article draft…"
-          />
+      <div className={styles.composer}>
+        <label className={styles.composerLabel} htmlFor="score-title">
+          Headline
+        </label>
+        <input
+          id="score-title"
+          type="text"
+          className={styles.composerTitle}
+          value={heading}
+          onChange={(e) => dispatch(setDraftHeading(e.target.value))}
+          placeholder="Article headline"
+        />
+        <div className={styles.composerRule} aria-hidden />
+        <label className={styles.composerLabel} htmlFor="content-editor">
+          Article
+        </label>
+        <textarea
+          id="content-editor"
+          className={styles.composerBody}
+          value={body}
+          onChange={(e) => dispatch(setDraftBody(e.target.value))}
+          placeholder="Paste the full news or business article…"
+          rows={12}
+        />
+        <div className={styles.composerFooter}>
+          <span className={styles.composerMeta}>
+            {body.trim()
+              ? `${body.trim().split(/\s+/).length} words`
+              : 'Draft carries across all stages'}
+          </span>
+          <button
+            className={styles.evaluateButton}
+            onClick={handleEvaluate}
+            disabled={!body.trim() || heading.trim().length < 8 || status === 'loading'}
+          >
+            {status === 'loading' ? (
+              <>
+                <span className={styles.btnSpinner} aria-hidden />
+                Scoring…
+              </>
+            ) : (
+              <>
+                Score article
+                <FaArrowRight aria-hidden />
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      <button
-        className={styles.evaluateButton}
-        onClick={handleEvaluate}
-        disabled={!body.trim() || heading.trim().length < 8 || status === 'loading'}
-      >
-        <FaRocket className={styles.icon} />
-        {status === 'loading' ? 'Probing OpenAI & Gemini…' : 'Score this draft'}
-      </button>
-
       {body.trim() && heading.trim().length < 8 && (
-        <p style={{ marginTop: '0.6rem', color: '#991b1b', fontSize: '0.9rem' }}>
-          Add a news headline (a few words) before scoring — untitled pastes are rejected.
+        <p className={styles.fieldHint}>
+          Add a news headline before scoring — untitled pastes are rejected.
         </p>
       )}
 
       {errorMsg && (
-        <div
-          role="alert"
-          style={{
-            marginTop: '1rem',
-            padding: '0.9rem 1.1rem',
-            border: '1px solid #fca5a5',
-            background: '#fef2f2',
-            color: '#991b1b',
-            fontSize: '0.92rem',
-            lineHeight: 1.45,
-          }}
-        >
+        <div className={styles.errorBanner} role="alert">
           {errorMsg}
         </div>
       )}
@@ -165,7 +170,7 @@ export default function ContentScore() {
         <section className={styles.overallScoreSection}>
           <h2 className={styles.sectionTitle}>
             <FaBrain className={styles.icon} />
-            Your citeability score (60–85)
+            Your citeability score
           </h2>
           <div className={styles.overallScoreDisplay}>
             <div
@@ -176,44 +181,94 @@ export default function ContentScore() {
             </div>
             <div className={styles.scoreInfo}>
               <div className={styles.scoreLabel}>
-                Blended from OpenAI + Gemini citation probes
+                Scored from live OpenAI citation probe
               </div>
             </div>
           </div>
         </section>
       )}
 
-      {status === 'success' && result?.citationProbes && (
-        <section className="desk-panel" style={{ marginTop: '1rem' }}>
-          <h3 style={{ margin: '0 0 0.65rem', fontSize: '1rem' }}>Live citation probes</h3>
-          {(['openai', 'gemini'] as const).map((key) => {
-            const p = result.citationProbes![key];
-            return (
-              <div key={key} style={{ marginBottom: '0.85rem' }}>
-                <strong style={{ textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                  {p.provider}
-                </strong>
-                <span className="desk-meta">
-                  {' '}
-                  · {p.ok ? `score ${p.score}` : 'probe unavailable'}
-                  {p.ok ? ` · would cite: ${p.wouldCite ? 'yes' : 'leaning no'}` : ''}
-                  {p.error ? ` · ${p.error}` : ''}
+      {status === 'success' && (
+        <section className={styles.probePanel}>
+          <h3 className={styles.probeTitle}>Live citation probe</h3>
+          <p className={styles.probeLede}>
+            OpenAI is running live in this demo. Claude is out of scope — it rarely cites sources.
+          </p>
+
+          {result?.citationProbes?.openai && !result.citationProbes.openai.skipped && (
+            <div className={styles.probeRow}>
+              <div className={styles.probeRowHead}>
+                <strong>OpenAI</strong>
+                <span className={styles.badgeLive}>Live in demo</span>
+                <span className={styles.probeMeta}>
+                  {result.citationProbes.openai.ok
+                    ? `score ${result.citationProbes.openai.score} · would cite: ${
+                        result.citationProbes.openai.wouldCite ? 'yes' : 'leaning no'
+                      }`
+                    : 'probe unavailable'}
+                  {result.citationProbes.openai.error
+                    ? ` · ${result.citationProbes.openai.error}`
+                    : ''}
                 </span>
-                {p.notes && (
-                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.88rem', lineHeight: 1.45 }}>
-                    {p.notes}
-                  </p>
-                )}
-                {p.claimsItWouldQuote?.length > 0 && (
-                  <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.1rem', fontSize: '0.85rem' }}>
-                    {p.claimsItWouldQuote.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
-            );
-          })}
+              {result.citationProbes.openai.notes && (
+                <p className={styles.probeNotes}>{result.citationProbes.openai.notes}</p>
+              )}
+              {result.citationProbes.openai.claimsItWouldQuote?.length > 0 && (
+                <ul className={styles.probeClaims}>
+                  {result.citationProbes.openai.claimsItWouldQuote.map((c, i) => (
+                    <li key={i}>{c}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <div className={styles.demoEngines}>
+            <div className={styles.demoEnginesHead}>
+              <h4>Other answer engines we can judge</h4>
+              <p>
+                Same citeability check works for these too. For this demo we haven’t purchased API
+                keys yet, so they’re shown as available capability — not live results.
+              </p>
+            </div>
+
+            <div className={styles.lockedGrid}>
+              {(
+                [
+                  {
+                    id: 'gemini',
+                    label: 'Gemini',
+                    blurb: 'We can judge whether Google’s answer engine would cite this draft.',
+                  },
+                  {
+                    id: 'grok',
+                    label: 'Grok',
+                    blurb: 'We can judge whether Grok / X answers would surface this story.',
+                  },
+                  {
+                    id: 'meta',
+                    label: 'Meta AI',
+                    blurb: 'We can judge extractable claims for Meta AI / Llama retrieval.',
+                  },
+                  {
+                    id: 'perplexity',
+                    label: 'Perplexity',
+                    blurb: 'We can judge whether Perplexity would link this piece in an answer.',
+                  },
+                ] as const
+              ).map((engine) => (
+                <div key={engine.id} className={styles.demoCard}>
+                  <div className={styles.probeRowHead}>
+                    <strong>{engine.label}</strong>
+                    <span className={styles.badgeDemo}>Demo · no key yet</span>
+                  </div>
+                  <p className={styles.probeSoonBlurb}>{engine.blurb}</p>
+                  <p className={styles.lockedHint}>Capable — key not purchased for this demo</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
@@ -222,10 +277,11 @@ export default function ContentScore() {
           status={status === 'error' && errorMsg ? 'idle' : status}
           result={result}
           onRetry={handleEvaluate}
+          loadingFlow="score"
           idleHint={
             errorMsg
               ? 'Fix the paste above, then score again.'
-              : 'Score the draft to probe OpenAI & Gemini and see both editors.'
+              : 'Score the draft to run the live OpenAI probe. Gemini, Grok, Meta, and Perplexity can be judged the same way once demo keys are available.'
           }
         />
       </div>

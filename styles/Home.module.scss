@@ -7,79 +7,136 @@
 }
 
 .hero {
-  padding: 3.5rem 0 2.5rem;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  padding: 4.5rem 0 3.5rem;
   background: transparent;
   border-bottom: 1px solid $ink;
+  animation: heroIn 0.55s $ease-out both;
 
   .heroContainer {
     @include container;
     text-align: left;
-    max-width: 820px;
+    max-width: 920px;
     margin-left: auto;
     margin-right: auto;
   }
 
   .title {
-    font-size: clamp(2rem, 4.5vw, 3.1rem);
-    font-weight: 650;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    font-weight: 700;
     color: $ink;
-    margin-bottom: 1rem;
-    line-height: 1.12;
-    letter-spacing: -0.035em;
-  }
-
-  .subHeading {
-    font-size: clamp(1.05rem, 2vw, 1.25rem);
-    font-weight: 500;
-    color: $text-primary;
-    margin-bottom: 0.85rem;
-    line-height: 1.45;
+    margin-bottom: 1.15rem;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
   }
 
   .subtitle {
-    font-size: 0.98rem;
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
     color: $text-secondary;
-    max-width: 40rem;
-    margin: 0 0 1.5rem;
-    line-height: 1.55;
+    max-width: 34rem;
+    margin: 0 0 1.75rem;
+    line-height: 1.45;
+    font-weight: 500;
+  }
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.heroBrand {
+  font-family: $sans-stack;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: $ink;
+  margin: 0 0 0.85rem;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-left: 0.35rem;
+    border-radius: 50%;
+    background: $primary-color;
+    vertical-align: middle;
+    transform: translateY(-0.15rem);
   }
 }
 
 .heroEyebrow {
   font-family: $mono-stack;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: $primary-color;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.heroLogo {
-  height: 2.2rem;
-  width: auto;
-  display: block;
-  margin: 0 0 1.25rem;
+.titleAccent {
+  color: $primary-color;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .heroCta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: $ink !important;
-  color: #fafafa !important;
-  padding: 0.75rem 1.2rem;
-  border: 1px solid $ink;
-  font-family: $mono-stack;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  background: $primary-color !important;
+  color: #fffaf8 !important;
+  padding: 0.9rem 1.35rem;
+  border: 1px solid $primary-color;
+  border-radius: $radius-sm;
+  font-family: $sans-stack;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
   text-decoration: none !important;
-  transition: background 0.15s, color 0.15s;
+  box-shadow: 0 10px 24px -12px rgba(234, 75, 43, 0.7);
+  transition: transform 0.2s $ease-out, background 0.2s $ease-out, box-shadow 0.2s $ease-out;
 
   &:hover {
-    background: transparent !important;
-    color: $ink !important;
+    background: $primary-hover !important;
+    border-color: $primary-hover !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px -14px rgba(234, 75, 43, 0.75);
+  }
+}
+
+.heroGhost {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid $ink;
+  border-radius: $radius-sm;
+  color: $ink !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none !important;
+  background: rgba(255, 255, 255, 0.7);
+  transition: background 0.2s $ease-out, transform 0.2s $ease-out;
+
+  &:hover {
+    background: #fff;
+    transform: translateY(-1px);
   }
 }
 
@@ -102,7 +159,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #5eead4;
+    color: $primary-color;
     margin-bottom: 0.35rem;
   }
 
@@ -261,6 +318,25 @@
 
 .howCtaWrap {
   margin-top: 1.75rem;
+}
+
+.marketingBlock,
+.marketingBlockAlt {
+  padding: 3.5rem 0 4rem;
+  border-top: 1px solid rgba(18, 18, 18, 0.12);
+}
+
+.marketingBlock {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.marketingBlockAlt {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.marketingInner {
+  @include container;
+  max-width: 1080px;
 }
 
 @media (max-width: 768px) {

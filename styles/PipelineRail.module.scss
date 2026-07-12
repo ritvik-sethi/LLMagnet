@@ -2,18 +2,36 @@
 
 .rail {
   position: sticky;
-  top: 52px;
+  top: 68px;
   z-index: 900;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0.45rem 1rem;
-  background: rgba(18, 18, 18, 0.96);
-  border-bottom: 1px solid $ink;
-  color: #a1a1aa;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0.85rem 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  border: none;
+  border-bottom: 1px solid rgba(18, 18, 18, 0.12);
+  border-radius: 0;
+  color: $ink;
+  box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: railIn 0.4s $ease-out 0.05s both;
+}
+
+@keyframes railIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stages {
@@ -30,11 +48,11 @@
     align-items: center;
 
     &:not(:last-child)::after {
-      content: '›';
-      margin: 0 0.2rem;
-      color: #52525b;
-      font-family: $mono-stack;
-      font-size: 0.85rem;
+      content: '';
+      width: 14px;
+      height: 2px;
+      margin: 0 0.35rem;
+      background: rgba(18, 18, 18, 0.18);
     }
   }
 }
@@ -42,21 +60,21 @@
 .stageLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   text-decoration: none;
-  padding: 0.2rem 0.45rem;
-  border-radius: 0;
+  padding: 0.45rem 0.7rem;
+  border-radius: 9px;
   border: 1px solid transparent;
-  font-family: $mono-stack;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #a1a1aa;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  font-family: $sans-stack;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: #1e293b;
+  transition: color 0.15s $ease-out, border-color 0.15s $ease-out, background 0.15s $ease-out;
 
   &:hover {
-    color: #fafafa;
+    color: $ink;
+    background: rgba(18, 18, 18, 0.04);
     text-decoration: none;
   }
 }
@@ -65,70 +83,75 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  border-radius: 0;
-  border: 1px solid #52525b;
-  font-size: 0.65rem;
-  font-weight: 600;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 7px;
+  border: 1.5px solid rgba(18, 18, 18, 0.28);
+  font-size: 0.78rem;
+  font-weight: 700;
   font-family: $mono-stack;
+  color: $ink;
+  background: #fff;
 }
 
 .completed .stageLink {
-  color: #86efac;
+  color: #166534;
   .stageIndex {
-    background: #15803d;
-    border-color: #15803d;
-    color: white;
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #fff;
   }
 }
 
 .current .stageLink {
-  color: #fafafa;
-  border-color: #fafafa;
-  background: transparent;
+  color: $ink;
+  border-color: rgba(234, 75, 43, 0.55);
+  background: rgba(234, 75, 43, 0.1);
   .stageIndex {
-    background: #fafafa;
-    border-color: #fafafa;
-    color: $ink;
+    background: $primary-color;
+    border-color: $primary-color;
+    color: #fff;
   }
 }
 
 .upcoming .stageLink {
-  color: #71717a;
+  color: #334155;
   .stageIndex {
-    background: transparent;
-    color: #71717a;
+    background: #fff;
+    color: #1e293b;
+    border-color: rgba(18, 18, 18, 0.24);
   }
   &:hover {
-    color: #e4e4e7;
+    color: $ink;
   }
 }
 
 .railEnd {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   flex-shrink: 0;
 }
 
 .reset {
-  border: 1px solid #52525b !important;
-  background: transparent !important;
-  color: #a1a1aa !important;
-  font-family: $mono-stack !important;
-  font-size: 0.65rem !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  padding: 0.28rem 0.5rem !important;
-  border-radius: 0 !important;
+  border: 1.5px solid rgba(18, 18, 18, 0.22) !important;
+  background: #fff !important;
+  color: $ink !important;
+  font-family: $sans-stack !important;
+  font-size: 0.88rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: 9px !important;
   cursor: pointer;
+  box-shadow: none !important;
 
   &:hover {
-    color: #fafafa !important;
-    border-color: #fafafa !important;
-    background: transparent !important;
+    color: $ink !important;
+    border-color: $primary-color !important;
+    background: rgba(234, 75, 43, 0.08) !important;
+    transform: none !important;
   }
 }
 
@@ -136,40 +159,45 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  line-height: 1.1;
+  line-height: 1.15;
   white-space: nowrap;
 }
 
 .scoreLabel {
   font-family: $mono-stack;
-  font-size: 0.58rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #71717a;
+  letter-spacing: 0.1em;
+  color: #334155;
+  font-weight: 650;
 }
 
 .scoreValue {
   font-family: $mono-stack;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #fafafa;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: $ink;
   font-variant-numeric: tabular-nums;
+  transition: color 0.25s $ease-out, transform 0.25s $ease-out;
 }
 
 .bump {
   .scoreValue {
-    color: #5eead4;
+    color: $primary-color;
+    transform: scale(1.06);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .rail {
+    top: 60px;
+    padding: 0.7rem 1rem;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.45rem;
+    gap: 0.65rem;
   }
   .stageLabel {
-    display: none;
+    display: inline;
   }
   .railEnd {
     width: 100%;
@@ -177,5 +205,11 @@
   }
   .score {
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .stageLabel {
+    display: none;
   }
 }

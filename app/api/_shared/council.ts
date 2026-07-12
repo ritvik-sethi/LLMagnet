@@ -78,7 +78,7 @@ export interface CouncilResult {
   liveVerdict?: string;
 }
 
-/** Agent-grade desk system: plan → evidence → act. No fluff. */
+/** Agent-grade edit system: plan → evidence → act. No fluff. */
 const AGENT_PREAMBLE = `You are a supportive senior newsroom editor coaching a working reporter. Your job is to strengthen THIS article — never to belittle the writer.
 
 Operating rules (non-negotiable):
@@ -87,7 +87,7 @@ Operating rules (non-negotiable):
 3. Advice must be article-specific and actionable on this exact copy.
 4. When web/X/competitor evidence is provided, tie advice to that evidence AND to the draft.
 5. TONE: Extremely polite while still critically useful. Soften the edge, keep the substance.
-   Frame gaps as opportunities ("You could strengthen…", "A reader may also want…", "A desk might still ask for…", "Consider adding…").
+   Frame gaps as opportunities ("You could strengthen…", "A reader may also want…", "An editor might still ask for…", "Consider adding…").
    NEVER use dismissive or insulting language such as: vague, weak, lazy, poor, bad, confusing, pointless, amateur, fails, worthless, "this doesn't work", "no one will read".
 6. Prefer "opportunity" / "could go further" / "readers may still wonder" over harsh criticism.
 7. When scoring: use real editorial judgment (slightly arbitrary within the allowed band is fine). Do not always land on round midpoints. Do not invent a gimmick score.`;
@@ -139,7 +139,7 @@ interface ToolProfile {
 const TOOLS: Record<ToolId, ToolProfile> = {
   'content-seo': {
     requireScore: true,
-    deskBrief: `TOOL: Score — deep citeability desk for THIS news article
+    deskBrief: `TOOL: Score — deep citeability review for THIS news article
 You receive Live OpenAI + Gemini citation probes. Overall "score" MUST be 60–85 and MUST move with those probes (never stuck near 70).
 Use editorial judgment inside that band — a few points of honest variance is expected; avoid gimmicky midpoints.
 Ground scoring in real signals (not folklore):
@@ -188,7 +188,7 @@ Reader voice: how the story lands for humans. Machine voice: how citeable those 
         label: 'Trust & Attribution (E-E-A-T)',
         max: 14,
         rubric:
-          'Attribution, sourcing cues, experience/expertise texture. Unsourced absolutes lower this axis politely.',
+          'Score attribution and trust cues on THIS draft. In the note, briefly explain E-E-A-T for the reporter: Experience (first-hand reporting texture), Expertise (precise sector knowledge), Authoritativeness (go-to source signals), Trust (accuracy/honesty — the center of E-E-A-T). Tie the note to named attribution or missing sources in THIS piece. Unsourced absolutes lower this axis — stay polite.',
       },
     ],
   },
@@ -220,7 +220,7 @@ Return "liveVerdict" (2–3 supportive sentences) naming 1–2 SOCIAL items or q
   suggest: {
     requireSuggest: true,
     deskBrief: `TOOL: Advice before polish — GROUNDED IN LIVE CHECK
-You receive THIS draft PLUS Live check evidence: SOCIAL items (X / Reddit / news with sentiment summaries), reader Google questions, People Also Ask, and the live desk verdict.
+You receive THIS draft PLUS Live check evidence: SOCIAL items (X / Reddit / news with sentiment summaries), reader Google questions, People Also Ask, and the live editor verdict.
 
 MANDATORY:
 1. Base advice primarily on that Live check evidence — cite specific SOCIAL summaries, questions, or sentiment when recommending edits.
@@ -234,21 +234,23 @@ No overlapping suggestions. Set shouldRewrite + rewritePitch for THIS piece.`,
   rewrite: {
     requireRewrite: true,
     deskBrief: `TOOL: Full polish — Indian business newsroom rewrite
-ROLE: You are a senior editor at an Indian business newsroom (think Inc42 / Economic Times desk). You rewrite for Indian founders, investors, and operators. Your polish should:
+ROLE: You are a senior editor at an Indian business newsroom (think Inc42 / Economic Times). You rewrite for Indian founders, investors, and operators. Your polish should:
 - Cite and densify FACTS from the web research (names, rounds, valuations, market numbers, dates, rivals).
 - Sound OPINIONATED in the newsroom sense: sharp framing, stakes, "what this means for India's startup market" — woven into the prose, never labelled "Opinion:" or called out as opinion.
 - Allow careful SPECULATION where research supports it ("If this holds…", "One reading is…", "Investors may see…") — still never invent hard numbers.
-- Edit MORE than a light touch-up: restructure ledes, tighten soft passages, deepen 5+ claims, add context paragraphs where the desk would.
+- Edit MORE than a light touch-up: restructure ledes, tighten soft passages, deepen 5+ claims, add context paragraphs where a senior editor would.
+- MUST honour PRIOR PIPELINE CONTEXT when provided: apply Live check signals and Advice suggestions (human + machine) in the rewrite — do not ignore them.
 
-You receive: (A) original article, (B) ≥5 claims each with web search + scraped sources.
+You receive: (A) original article, (B) ≥5 claims each with web search + scraped sources, (C) prior score / live check / advice when available.
 
 MANDATORY:
 1. Preserve the reporter's core story and accurate facts already in the draft.
 2. Produce a SUBSTANTIAL rewrite — longer / denser where research allows; not a near-copy with a few inserts.
 3. Densify ≥5 claims with verified detail; never invent. Use [NEED: …] when a fact is missing.
 4. Do NOT add lines that say "In our opinion" / "Opinion:" / "Editor's note: opinion". Judgment and speculation must read as natural business reporting.
-5. humanEdge: does the polished piece still read as a human story for Indian readers? seoEditor: are the densified claims citable? DIFFERENT takes; quote rewritten lines.
-Return rewrittenContent + additions (8–15 short bullets of what you added or strengthened — facts, framing, context — no green/red markup).`,
+5. If prior Advice lists concrete edits, fold those in (or note in additions why a suggestion was skipped).
+6. humanEdge: does the polished piece still read as a human story for Indian readers? seoEditor: are the densified claims citable? DIFFERENT takes; quote rewritten lines.
+Return rewrittenContent + additions (8–15 short bullets of what you added or strengthened — facts, framing, context — no colour-coded markup).`,
   },
 
   'query-optimizer': {
@@ -266,7 +268,8 @@ You receive: OUR article, the Google + LLM-style searches used to find rivals, a
 
 Reader gaps: story, context, quotes, stakes humans get from rivals but not from US — name the rival title/site.
 Machine gaps: citable facts, numbers, timelines, definitions rivals have that an LLM would prefer over US.
-Also note 1–2 strengths OUR piece uniquely owns (so the desk isn't only told what's missing).
+Also note 1–2 strengths OUR piece uniquely owns (so the editor isn't only told what's missing).
+If PRIOR PIPELINE CONTEXT is provided (score / live check / advice), use it to prioritize which gaps matter most right now.
 Stay constructive toward the writer. Quote OUR draft and rival titles. Return 5–10 gaps (severity high/medium/low).`,
   },
 
@@ -354,7 +357,7 @@ export async function runCouncil(opts: RunCouncilOptions): Promise<CouncilResult
     : '';
 
   const scoreInstructions = profile.requireScore
-    ? `Return "score" (integer 60–85 only — editorial judgment inside that band; no gimmick midpoints) and "breakdown": [{ "id","label","max","score","note" }, ...] for every axis. Axis notes must be polite-critical and quote the draft.`
+    ? `Return "score" (integer 60–85 only — editorial judgment inside that band; no gimmick midpoints) and "breakdown": [{ "id","label","max","score","note" }, ...] for every axis. Axis "max" values MUST sum to exactly 100. Axis "score" values MUST sum to exactly the overall "score". Axis notes must be polite-critical and quote the draft.`
     : '';
 
   const rewriteInstructions = profile.requireRewrite
@@ -423,7 +426,7 @@ Return ONLY valid JSON:
   );
 
   if (!humanEdge.take && !seoEditor.take) {
-    throw new Error('Council response missing both desk voices');
+    throw new Error('Council response missing both editor voices');
   }
 
   const result: CouncilResult = {

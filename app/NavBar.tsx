@@ -20,46 +20,46 @@ export default function NavBar() {
 
   return (
     <nav className={navStyles.nav}>
-      <div className={navStyles.navContainer}>
-        <Link href="/" className={navStyles.logo}>
-          <img src="/logo.svg" alt="LLMagnet" className={navStyles.logoImg} />
-          <span className={navStyles.logoText}>LLMagnet</span>
-        </Link>
-        <button
-          className={navStyles.menuButton}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          {menuOpen ? <FaTimes /> : <FaBars />}
-        </button>
-        <div className={`${navStyles.navLinks} ${menuOpen ? navStyles.open : ''}`}>
-          {features.map((feature) => (
-            <Link
-              key={feature.path}
-              href={feature.path}
-              className={`${navStyles.link} ${pathname === feature.path ? navStyles.active : ''}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              {feature.title}
-            </Link>
-          ))}
+      <div className={navStyles.navShell}>
+        <div className={navStyles.navContainer}>
+          <Link href="/" className={navStyles.logo} onClick={() => setMenuOpen(false)}>
+            <span className={navStyles.logoMark} aria-hidden>
+              <img src="/logo.svg" alt="" className={navStyles.logoImg} />
+            </span>
+            <span className={navStyles.logoText}>
+              LLM<span>agnet</span>
+            </span>
+            <span className={navStyles.logoChip}>edit</span>
+          </Link>
+
+          <button
+            className={navStyles.menuButton}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            data-variant="ghost"
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+
+          <div className={`${navStyles.navLinks} ${menuOpen ? navStyles.open : ''}`}>
+            {features.map((feature) => {
+              const active = pathname === feature.path;
+              return (
+                <Link
+                  key={feature.path}
+                  href={feature.path}
+                  className={`${navStyles.link} ${active ? navStyles.active : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {feature.title}
+                  {active && <span className={navStyles.activeDot} aria-hidden />}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
-      {menuOpen && (
-        <div className={navStyles.mobileMenu}>
-          {features.map((feature) => (
-            <Link
-              key={feature.path}
-              href={feature.path}
-              className={`${navStyles.link} ${pathname === feature.path ? navStyles.active : ''}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              {feature.title}
-            </Link>
-          ))}
-        </div>
-      )}
     </nav>
   );
 }

@@ -9,6 +9,7 @@ import {
   setDraftHeading,
   setDraftBody,
   setSourceUrl,
+  lockStartedFrom,
   setCurrentStage,
   markStageComplete,
   stagePath,
@@ -30,6 +31,10 @@ export default function DraftPastePage() {
     dispatch(setCurrentStage('paste'));
   }, [dispatch]);
 
+  useEffect(() => {
+    if (sourceUrl && !urlInput) setUrlInput(sourceUrl);
+  }, [sourceUrl, urlInput]);
+
   const fetchFromUrl = async () => {
     setFetchError(null);
     setFetching(true);
@@ -44,6 +49,7 @@ export default function DraftPastePage() {
       if (data.title) dispatch(setDraftHeading(data.title));
       dispatch(setDraftBody(data.content));
       dispatch(setSourceUrl(data.url));
+      dispatch(lockStartedFrom());
     } catch (e) {
       setFetchError(e instanceof Error ? e.message : 'Could not load that article');
     } finally {
@@ -52,6 +58,7 @@ export default function DraftPastePage() {
   };
 
   const continueToScore = () => {
+    dispatch(lockStartedFrom());
     dispatch(markStageComplete('paste'));
     dispatch(setCurrentStage('score'));
     router.push(stagePath('score'));
@@ -59,9 +66,9 @@ export default function DraftPastePage() {
 
   return (
     <main className="desk-page">
-      <p className="desk-kicker">Step 1 of 6 · Open the story</p>
+      <p className="desk-kicker">Step 1 of 6 · Open the article</p>
       <h1 className="desk-title">
-        <FaFileAlt /> Bring in your draft
+        <FaFileAlt /> Open the article
       </h1>
       <p className="desk-lede">
         Paste a real news / business article — or drop a public article URL. Wikipedia dumps, social
@@ -70,8 +77,8 @@ export default function DraftPastePage() {
       </p>
 
       <WowNote label="Wow">
-        One working copy for the whole desk. Score it, check the news cycle, polish it, and chase
-        rivals — <strong>without ever leaving this story</strong>.
+        One working copy for the whole edit flow. Score it, check the news cycle, polish it, and
+        chase rivals — <strong>without ever leaving this story</strong>.
       </WowNote>
 
       <div className="desk-panel">

@@ -1,0 +1,123 @@
+@import 'variables';
+
+.comparison {
+  margin-top: 1rem;
+}
+
+.honest {
+  margin: 0 0 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #64748b;
+  max-width: 44rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th,
+  td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    line-height: 1.45;
+  }
+
+  thead th {
+    font-family: $mono-stack;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+    background: rgba(248, 250, 252, 0.95);
+    white-space: nowrap;
+  }
+
+  tbody th {
+    font-weight: 600;
+    color: $ink;
+    letter-spacing: -0.015em;
+    min-width: 11rem;
+  }
+
+  tbody tr:last-child th,
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  td {
+    color: #475569;
+  }
+}
+
+.colUs {
+  background: rgba(15, 23, 42, 0.03);
+  color: $ink !important;
+  font-weight: 550;
+}
+
+.faq {
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.faqItem {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.faqQ {
+  width: 100%;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.05rem 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: $ink !important;
+  text-align: left;
+  font-family: $sans-stack !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transform: none !important;
+
+  &:hover {
+    background: transparent !important;
+    color: #334155 !important;
+  }
+}
+
+.faqIcon {
+  font-family: $mono-stack;
+  font-size: 1.15rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.faqA {
+  margin: 0;
+  padding: 0 0 1.1rem;
+  max-width: 42rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.faqOpen .faqQ {
+  color: $ink !important;
+}

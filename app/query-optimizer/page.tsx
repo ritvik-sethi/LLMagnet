@@ -49,8 +49,8 @@ export default function QueryOptimizer() {
         <FaBullseye /> Query Optimizer
       </h1>
       <p style={{ color: '#6b7280', marginBottom: '1.25rem' }}>
-        Find the questions this Indian-startup story should win citations for — then hear both desk
-        views on which ones readers care about vs which ones AIs will cite.
+        Find the questions this Indian-startup story should win citations for — then hear both
+        editor views on which ones readers care about vs which ones AIs will cite.
       </p>
 
       <input
@@ -76,7 +76,8 @@ export default function QueryOptimizer() {
           status={status}
           result={result}
           onRetry={run}
-          idleHint="Run the optimizer to get target queries plus both desk views."
+          loadingFlow="queries"
+          idleHint="Run the optimizer to get target queries plus both editor views."
         />
       </div>
 

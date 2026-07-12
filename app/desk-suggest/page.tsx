@@ -8,9 +8,13 @@ import { FaLightbulb, FaRocket, FaArrowRight } from 'react-icons/fa';
 import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import WowNote from '@/components/WowNote';
 import {
+  setDraftHeading,
+  setDraftBody,
   setCurrentStage,
   markStageComplete,
   stagePath,
+  setAdvice,
+  lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
 
@@ -42,6 +46,7 @@ export default function DeskSuggestPage() {
   );
 
   const run = async () => {
+    dispatch(lockStartedFrom());
     setStatus('loading');
     try {
       const res = await fetch('/api/desk-suggest', {
@@ -50,7 +55,19 @@ export default function DeskSuggestPage() {
         body: JSON.stringify({ heading, content: body, score, liveCheck }),
       });
       if (!res.ok) throw new Error('failed');
-      setResult((await res.json()) as SuggestResult);
+      const data = (await res.json()) as SuggestResult;
+      setResult(data);
+      dispatch(
+        setAdvice({
+          rewritePitch: data.rewritePitch,
+          shouldRewrite: data.shouldRewrite,
+          humanSuggestions: data.humanEdge?.suggestions ?? data.reader?.suggestions ?? [],
+          machineSuggestions: data.seoEditor?.suggestions ?? data.machine?.suggestions ?? [],
+          reconciledAction: data.reconciledAction,
+          comparison: data.comparison,
+          capturedAt: new Date().toISOString(),
+        })
+      );
       dispatch(markStageComplete('suggest'));
       setStatus('success');
     } catch {
@@ -60,19 +77,37 @@ export default function DeskSuggestPage() {
 
   return (
     <main className="desk-page">
-      <p className="desk-kicker">Step 4 of 6 · Before you rewrite</p>
+      <p className="desk-kicker">Step 4 of 6 · Get edit advice</p>
       <h1 className="desk-title">
-        <FaLightbulb /> Advice grounded in Live check
+        <FaLightbulb /> Get edit advice
       </h1>
       <p className="desk-lede">
         Suggestions are ranked against what Live check found — SOCIAL sentiment on X and Reddit,
-        fresh news, and the questions readers are already Googling — not generic tips.
+        fresh news, and the questions readers are already Googling — not generic tips. Your
+        headline, link, and body stay with you from Draft.
       </p>
 
       <WowNote label="Wow">
         Each move should point to a <strong>Live check signal</strong> (tweet / Reddit / question),
         then a concrete edit on this draft.
       </WowNote>
+
+      <label className="desk-label">Working headline</label>
+      <input
+        className="desk-field"
+        type="text"
+        value={heading}
+        onChange={(e) => dispatch(setDraftHeading(e.target.value))}
+        placeholder="Article headline…"
+      />
+      <label className="desk-label">Article body</label>
+      <textarea
+        className="desk-field"
+        value={body}
+        onChange={(e) => dispatch(setDraftBody(e.target.value))}
+        placeholder="Your working draft…"
+        rows={8}
+      />
 
       {hasLive ? (
         <div className="desk-panel" style={{ marginBottom: '1rem' }}>
@@ -110,6 +145,7 @@ export default function DeskSuggestPage() {
           status={status}
           result={result}
           onRetry={run}
+          loadingFlow="suggest"
           idleHint="Advice will cite Live check SOCIAL sentiment and reader questions where available."
         />
       </div>
