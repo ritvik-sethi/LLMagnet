@@ -34,12 +34,11 @@ function getOpenAI() {
 }
 
 /** Shared edit rubric for live citation probes (Google E-E-A-T + LLM cite research). */
-const PROBE_RUBRIC = `You are judging whether YOU would CITE or QUOTE this piece when answering a user.
+const PROBE_RUBRIC = `You are judging whether YOU would CITE or QUOTE this piece when answering a user about THIS story.
 
 IMPORTANT: Respond with a single valid JSON object only (no markdown fences).
 
-Score ONLY between ${CITE_SCORE_MIN} and ${CITE_SCORE_MAX}. Do not invent a fake middle score.
-Use editorial judgment — two similar drafts can differ by a few points; avoid always landing on 70 or 75.
+Score ONLY between ${CITE_SCORE_MIN} and ${CITE_SCORE_MAX}. Be honestly arbitrary within that band — different articles MUST land on different numbers. Never default to a round midpoint (50/60/70/75/80).
 
 If the paste is NOT a real news / business article (gibberish, Wikipedia dump, social post, product page, homework, code, etc.), return this JSON:
 {
@@ -47,8 +46,9 @@ If the paste is NOT a real news / business article (gibberish, Wikipedia dump, s
   "message": "${INVALID_INPUT_MESSAGE}",
   "wouldCite": false,
   "score": ${CITE_SCORE_MIN},
-  "notes": "one polite sentence",
-  "claimsItWouldQuote": []
+  "notes": "one sentence naming what kind of non-article this is",
+  "claimsItWouldQuote": [],
+  "refuseReasons": ["why you would not cite"]
 }
 
 Otherwise return this JSON:
@@ -56,25 +56,26 @@ Otherwise return this JSON:
   "invalidInput": false,
   "wouldCite": boolean,
   "score": number,
-  "notes": "2–3 polite but frank sentences: what you'd quote vs what an editor would still ask for",
-  "claimsItWouldQuote": ["up to 3 short quotes or paraphrases you might use"]
+  "notes": "3–5 frank sentences. MUST name specific companies/people/numbers from THIS draft. MUST say exactly which sentence you would lift and which claim you would refuse. Ban empty coaching like 'add more keywords' or 'improve readability'.",
+  "claimsItWouldQuote": ["up to 4 SHORT verbatim-ish lifts from the draft — include a number or name in each"],
+  "refuseReasons": ["up to 3 concrete refuse reasons tied to THIS draft, e.g. '₹ round size unsourced in graf 2'"]
 }
 
-Score using these real signals (not SEO folklore):
-1. Quotable claim density — definitive sentences with named entities + numbers/dates an answer can lift.
-2. Trust / attribution — who said what; sources named; avoid unsourced absolute claims (maps to Google E-E-A-T Trust).
-3. Information gain — unique reported detail vs generic rewrite anyone could produce.
-4. Extractability — self-contained passages ~120–180 words that survive chunking; clear structure.
-5. Headline–query fit — would the title match the fan-out questions a model asks about this story?
-6. Experience / expertise cues — first-hand reporting texture, precise market/sector language (E-E-A-T Experience + Expertise).
+Score using these real signals:
+1. Quotable claim density — definitive sentences with named entities + ₹/$ / dates.
+2. Trust / attribution — who said what; sources named (E-E-A-T Trust).
+3. Information gain — unique reported detail vs a generic rewrite of the headline.
+4. Extractability — self-contained 120–180 word chunks; clear hierarchy.
+5. Headline–query fit — would THIS title match fan-out questions about the story?
+6. India business texture — funding vocabulary, regulatory names (SEBI/RBI/DPIIT when relevant), founder/investor names, metro vs market stakes.
 
-Band guidance (arbitrary within range is fine):
-- ${CITE_SCORE_MIN}–66: thin attribution, soft claims, hard to quote confidently — still polite in notes.
-- 67–76: solid reported piece with some quotable lines; room to densify.
-- 77–${CITE_SCORE_MAX}: dense, attributable, extractable — you'd actually cite it.
+Band guidance (spread scores — do not cluster):
+- ${CITE_SCORE_MIN}–52: soft, thin, hard to quote — still name what is missing.
+- 53–68: some quotable lines; big densify opportunities.
+- 69–82: solid reported piece; selective cite with caveats.
+- 83–${CITE_SCORE_MAX}: dense, attributable, extractable — you would actually cite it.
 
-Tone of notes: very polite, collegial, gently critical. Never insult the writer. Prefer "you could strengthen…" / "an editor might still want…".
-Do not invent facts.`;
+Tone: collegial and precise. Never insult the writer. Never invent facts.`;
 
 async function probeOpenAI(title: string, content: string): Promise<CitationProbeResult> {
   const key = process.env.OPENAI_API_KEY;
@@ -93,7 +94,7 @@ async function probeOpenAI(title: string, content: string): Promise<CitationProb
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
-      temperature: 0.35,
+      temperature: 0.55,
       response_format: { type: 'json_object' },
       messages: [
         {
@@ -102,9 +103,9 @@ async function probeOpenAI(title: string, content: string): Promise<CitationProb
 
 HEADLINE: ${title}
 ARTICLE:
-${content.slice(0, 6000)}
+${content.slice(0, 7000)}
 
-Imagine a user asks: "What should I know about this story?" Be honest about citeability. Return JSON.`,
+Imagine a user asks about the companies and stakes in THIS story. Be honest about citeability. Return JSON.`,
         },
       ],
     });
@@ -116,6 +117,7 @@ Imagine a user asks: "What should I know about this story?" Be honest about cite
       score?: number;
       notes?: string;
       claimsItWouldQuote?: string[];
+      refuseReasons?: string[];
     };
 
     if (raw.invalidInput) {
@@ -131,12 +133,23 @@ Imagine a user asks: "What should I know about this story?" Be honest about cite
       };
     }
 
+    const refuse = Array.isArray(raw.refuseReasons)
+      ? raw.refuseReasons.filter((r) => typeof r === 'string').slice(0, 3)
+      : [];
+    const notesBase = raw.notes || '';
+    const notes =
+      refuse.length > 0
+        ? `${notesBase}${notesBase ? ' ' : ''}Would refuse: ${refuse.join('; ')}`
+        : notesBase;
+
     return {
       provider: 'openai',
-      score: clampCiteScore(typeof raw.score === 'number' ? raw.score : 68),
+      score: clampCiteScore(
+        typeof raw.score === 'number' ? raw.score : CITE_SCORE_MIN + 18
+      ),
       wouldCite: Boolean(raw.wouldCite),
-      notes: raw.notes || '',
-      claimsItWouldQuote: (raw.claimsItWouldQuote || []).slice(0, 3),
+      notes,
+      claimsItWouldQuote: (raw.claimsItWouldQuote || []).slice(0, 4),
       ok: true,
     };
   } catch (e) {
@@ -183,7 +196,7 @@ Imagine a user asks: "What should I know about this story?" Return ONLY JSON (no
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.35, responseMimeType: 'application/json' },
+        generationConfig: { temperature: 0.55, responseMimeType: 'application/json' },
       }),
     });
 
@@ -228,10 +241,10 @@ Imagine a user asks: "What should I know about this story?" Return ONLY JSON (no
 
     return {
       provider: 'gemini',
-      score: clampCiteScore(typeof raw.score === 'number' ? raw.score : 68),
+      score: clampCiteScore(typeof raw.score === 'number' ? raw.score : CITE_SCORE_MIN + 18),
       wouldCite: Boolean(raw.wouldCite),
       notes: raw.notes || '',
-      claimsItWouldQuote: (raw.claimsItWouldQuote || []).slice(0, 3),
+      claimsItWouldQuote: (raw.claimsItWouldQuote || []).slice(0, 4),
       ok: true,
     };
   } catch (e) {
@@ -297,7 +310,7 @@ export async function runCitationProbes(
 
   evidenceLines.push(
     `Blended probe score (pre-council): ${blendedScore}`,
-    'Edit rule: stay polite-critical; use editorial judgment inside the 60–85 band; never invent facts.'
+    `Edit rule: stay precise; use editorial judgment inside the ${CITE_SCORE_MIN}–${CITE_SCORE_MAX} band; never invent facts; never soft-coach.`
   );
 
   const evidenceBlock = evidenceLines.filter(Boolean).join('\n');
@@ -305,9 +318,8 @@ export async function runCitationProbes(
   return { openai, gemini, blendedScore, evidenceBlock, rejectedAsInvalid };
 }
 
-/** Blend council matrix score with live OpenAI/Gemini probes; land in 60–85. */
+/** Blend council matrix score with live OpenAI/Gemini probes. */
 export function blendCiteabilityScore(councilScore: number, probeBlended: number): number {
-  // Probes weigh more so the number moves with real LLM cite behavior
   const mixed = 0.42 * councilScore + 0.58 * probeBlended;
   return clampCiteScore(mixed);
 }

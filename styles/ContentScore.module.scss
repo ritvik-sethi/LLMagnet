@@ -447,10 +447,19 @@
     flex: 1;
 
     .scoreLabel {
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-size: 1.15rem;
+      font-weight: 650;
       color: $text-primary;
-      margin-bottom: 1rem;
+      margin-bottom: 0.45rem;
+      letter-spacing: -0.02em;
+    }
+
+    .scoreSignals {
+      margin: 0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: $text-secondary;
+      max-width: 28rem;
     }
 
     .scoreDetails {

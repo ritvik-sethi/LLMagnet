@@ -13,11 +13,15 @@ import {
 } from '@/store/slices/editorialDraftSlice';
 import styles from '../styles/ArticleContextBar.module.scss';
 
+function isHttpUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url.trim());
+}
+
 function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch {
-    return url;
+    return url.startsWith('sample:') ? 'sample' : url;
   }
 }
 
@@ -49,7 +53,7 @@ export default function ArticleContextBar() {
         </div>
         <p className={styles.empty}>
           No article loaded yet.{' '}
-          <Link href="/draft">Start from a headline or link</Link>
+          <Link href="/draft">Pick a sample article</Link>
         </p>
       </div>
     );
@@ -73,7 +77,7 @@ export default function ArticleContextBar() {
                 {startedTitle}
               </span>
             ) : null}
-            {startedUrl ? (
+            {startedUrl && isHttpUrl(startedUrl) ? (
               <a
                 className={styles.startedLink}
                 href={startedUrl}
@@ -84,6 +88,8 @@ export default function ArticleContextBar() {
                 <FaExternalLinkAlt aria-hidden />
                 {hostOf(startedUrl)}
               </a>
+            ) : startedUrl.startsWith('sample:') ? (
+              <span className={styles.startedLink}>sample</span>
             ) : null}
           </div>
         )}
@@ -105,9 +111,9 @@ export default function ArticleContextBar() {
           </span>
           <input
             type="url"
-            value={sourceUrl}
+            value={sourceUrl.startsWith('sample:') ? '' : sourceUrl}
             onChange={(e) => dispatch(setSourceUrl(e.target.value))}
-            placeholder="https://…"
+            placeholder={sourceUrl.startsWith('sample:') ? 'Sample article' : 'https://…'}
           />
         </label>
       </div>
@@ -115,7 +121,7 @@ export default function ArticleContextBar() {
       <p className={styles.bodyMeta}>
         {body.trim()
           ? `${body.trim().split(/\s+/).length} words carried into this stage`
-          : 'Body empty — paste the article on Draft to continue.'}
+          : 'Body empty — load a sample on Draft to continue.'}
       </p>
     </div>
   );

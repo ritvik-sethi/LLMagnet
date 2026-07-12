@@ -18,10 +18,10 @@ export default function Home() {
     {
       title: 'Bring in your article',
       description:
-        'Paste the piece you’re editing, or drop a published URL. One draft stays with you through every editing step.',
+        'Load a sample story — or edit the headline and body yourself. One draft stays with you through every editing step.',
       path: '/draft',
       icon: <FaPenFancy className={styles.icon} />,
-      wow: 'No more copy-paste between six tabs.',
+      wow: 'Eight sample pieces ready to run.',
     },
     {
       title: 'See how citeable it is',

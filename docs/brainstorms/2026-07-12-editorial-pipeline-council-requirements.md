@@ -116,7 +116,7 @@ That disconnection is also the missed opportunity. The product's whole thesis is
 
 Deferred for later:
 
-- Deep India domain data — company/sector recognition, comparing against Indian publications (Entrackr, YourStory, ET Startups).
+- Deep India domain data — company/sector recognition, comparing against other Indian business coverage.
 - Full inline "Grammarly-style" single-editor surface (the ambient-tools approach).
 - Auth, multi-user, and backend persistence of drafts beyond what the demo needs.
 - New features beyond the existing six.

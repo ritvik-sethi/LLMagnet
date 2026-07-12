@@ -14,7 +14,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How should I read the score?',
-    a: 'You see x/100. The matrix underneath shows which axes moved — so the number is editorial judgment, not a black box.',
+    a: 'You see x/100 inside a newsroom band (roughly high-30s to mid-90s). The number is blended from live citation probes plus deterministic article signals — so soft drafts and dense drafts land apart. The matrix notes and cite ledger name exact quotes, missing sources, and desk moves.',
   },
   {
     q: 'Does my draft persist across the six stages?',
@@ -25,8 +25,12 @@ const FAQ_ITEMS = [
     a: 'A rephrased search, reader Google questions, and SOCIAL items from X, Reddit, and fresh news — each with a short sentiment summary.',
   },
   {
-    q: 'What happens to pasted copy?',
-    a: 'This demo sends the draft to configured AI and search services to score and edit. Don’t paste secrets. Use Start over to clear.',
+    q: 'Where do the sample articles come from?',
+    a: 'They’re curated sample pieces bundled in the demo — pick one on Draft (or Polish) to load headline and body. You can still edit the text after it loads.',
+  },
+  {
+    q: 'What happens to the working draft?',
+    a: 'This demo sends the draft to configured AI and search services to score and edit. Don’t put secrets in the body. Use Start over to clear.',
   },
   {
     q: 'How is this different from a blank chat?',

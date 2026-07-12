@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { FaFileAlt, FaLink, FaArrowRight } from 'react-icons/fa';
+import { FaFileAlt, FaArrowRight } from 'react-icons/fa';
 import WowNote from '@/components/WowNote';
+import SampleArticlePicker from '@/components/SampleArticlePicker';
 import {
   setDraftHeading,
   setDraftBody,
@@ -15,6 +16,7 @@ import {
   stagePath,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
+import type { SampleArticle } from '@/lib/sampleArticles';
 
 export default function DraftPastePage() {
   const dispatch = useDispatch();
@@ -23,38 +25,15 @@ export default function DraftPastePage() {
   const body = useSelector((s: RootState) => s.editorialDraft.body);
   const sourceUrl = useSelector((s: RootState) => s.editorialDraft.sourceUrl);
 
-  const [urlInput, setUrlInput] = useState(sourceUrl || '');
-  const [fetching, setFetching] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
   useEffect(() => {
     dispatch(setCurrentStage('paste'));
   }, [dispatch]);
 
-  useEffect(() => {
-    if (sourceUrl && !urlInput) setUrlInput(sourceUrl);
-  }, [sourceUrl, urlInput]);
-
-  const fetchFromUrl = async () => {
-    setFetchError(null);
-    setFetching(true);
-    try {
-      const res = await fetch('/api/fetch-article', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: urlInput.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fetch failed');
-      if (data.title) dispatch(setDraftHeading(data.title));
-      dispatch(setDraftBody(data.content));
-      dispatch(setSourceUrl(data.url));
-      dispatch(lockStartedFrom());
-    } catch (e) {
-      setFetchError(e instanceof Error ? e.message : 'Could not load that article');
-    } finally {
-      setFetching(false);
-    }
+  const loadSample = (article: SampleArticle) => {
+    dispatch(setDraftHeading(article.title));
+    dispatch(setDraftBody(article.body));
+    dispatch(setSourceUrl(article.url));
+    dispatch(lockStartedFrom());
   };
 
   const continueToScore = () => {
@@ -71,9 +50,8 @@ export default function DraftPastePage() {
         <FaFileAlt /> Open the article
       </h1>
       <p className="desk-lede">
-        Paste a real news / business article — or drop a public article URL. Wikipedia dumps, social
-        posts, and non-editorial text are rejected with ENTER A VALID PROMPT LINK. Everything that
-        follows works on this same draft.
+        Load a sample story, or edit the headline and body below. Everything that follows works on
+        this same draft.
       </p>
 
       <WowNote label="Wow">
@@ -81,40 +59,13 @@ export default function DraftPastePage() {
         chase rivals — <strong>without ever leaving this story</strong>.
       </WowNote>
 
-      <div className="desk-panel">
-        <label className="desk-label">
-          <FaLink style={{ marginRight: 6 }} />
-          Or import from a published URL
-        </label>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <input
-            className="desk-field"
-            type="url"
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://example.com/your-story"
-            style={{ flex: 1, minWidth: 220, marginBottom: 0 }}
-          />
-          <button
-            className="ce-primary-btn"
-            type="button"
-            disabled={fetching || !urlInput.trim()}
-            onClick={fetchFromUrl}
-          >
-            {fetching ? 'Pulling article…' : 'Import article'}
-          </button>
-        </div>
-        {fetchError && (
-          <p className="desk-meta" style={{ color: '#b91c1c', marginTop: 8 }}>
-            {fetchError}
-          </p>
-        )}
-        {sourceUrl && !fetchError && (
-          <p className="desk-meta" style={{ color: '#15803d', marginTop: 8 }}>
-            Loaded from {sourceUrl}
-          </p>
-        )}
-      </div>
+      <SampleArticlePicker activeUrl={sourceUrl} onSelect={loadSample} />
+
+      {sourceUrl && (
+        <p className="desk-meta" style={{ color: '#15803d', marginBottom: '1rem' }}>
+          Sample article loaded
+        </p>
+      )}
 
       <label className="desk-label">Headline</label>
       <input
@@ -130,7 +81,7 @@ export default function DraftPastePage() {
         className="desk-field"
         value={body}
         onChange={(e) => dispatch(setDraftBody(e.target.value))}
-        placeholder="Paste your draft here…"
+        placeholder="Article body loads when you pick a sample…"
         rows={16}
       />
 

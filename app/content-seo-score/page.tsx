@@ -35,6 +35,17 @@ interface ScoreResult extends CouncilResultView {
     gemini: ProbeSide;
     blendedProbeScore: number;
   };
+  scoreBand?: { min: number; max: number };
+  scoreSignals?: {
+    seedScore: number;
+    wordCount: number;
+    namedEntitiesApprox: number;
+    moneyMentions: number;
+    dateMentions: number;
+    attributionCues: number;
+    strengths: string[];
+    gaps: string[];
+  };
 }
 
 export default function ContentScore() {
@@ -93,8 +104,8 @@ export default function ContentScore() {
           Score citeability
         </h1>
         <p className={styles.subtitle}>
-          Live OpenAI citation probe + editor matrix. We can judge Gemini, Grok, Meta AI, and
-          Perplexity the same way — this demo just doesn’t have those keys wired in yet.
+          Live citation probes + a feature-seeded matrix. Scores move with the draft — denser claims,
+          named money, and attribution pull you up; soft copy does not.
         </p>
       </header>
 
@@ -181,8 +192,18 @@ export default function ContentScore() {
             </div>
             <div className={styles.scoreInfo}>
               <div className={styles.scoreLabel}>
-                Scored from live OpenAI citation probe
+                Blended from live probe + article signals
+                {result?.scoreBand
+                  ? ` · band ${result.scoreBand.min}–${result.scoreBand.max}`
+                  : ''}
               </div>
+              {result?.scoreSignals && (
+                <p className={styles.scoreSignals}>
+                  Seed {result.scoreSignals.seedScore} · ~{result.scoreSignals.namedEntitiesApprox}{' '}
+                  entities · {result.scoreSignals.moneyMentions} money marks ·{' '}
+                  {result.scoreSignals.attributionCues} attribution cues
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -192,14 +213,15 @@ export default function ContentScore() {
         <section className={styles.probePanel}>
           <h3 className={styles.probeTitle}>Live citation probe</h3>
           <p className={styles.probeLede}>
-            OpenAI is running live in this demo. Claude is out of scope — it rarely cites sources.
+            OpenAI runs live. Gemini runs when a key is configured. Notes must name what they would
+            quote — and what they would refuse.
           </p>
 
           {result?.citationProbes?.openai && !result.citationProbes.openai.skipped && (
             <div className={styles.probeRow}>
               <div className={styles.probeRowHead}>
                 <strong>OpenAI</strong>
-                <span className={styles.badgeLive}>Live in demo</span>
+                <span className={styles.badgeLive}>Live</span>
                 <span className={styles.probeMeta}>
                   {result.citationProbes.openai.ok
                     ? `score ${result.citationProbes.openai.score} · would cite: ${
@@ -224,51 +246,65 @@ export default function ContentScore() {
             </div>
           )}
 
-          <div className={styles.demoEngines}>
-            <div className={styles.demoEnginesHead}>
-              <h4>Other answer engines we can judge</h4>
-              <p>
-                Same citeability check works for these too. For this demo we haven’t purchased API
-                keys yet, so they’re shown as available capability — not live results.
-              </p>
-            </div>
-
-            <div className={styles.lockedGrid}>
-              {(
-                [
-                  {
-                    id: 'gemini',
-                    label: 'Gemini',
-                    blurb: 'We can judge whether Google’s answer engine would cite this draft.',
-                  },
-                  {
-                    id: 'grok',
-                    label: 'Grok',
-                    blurb: 'We can judge whether Grok / X answers would surface this story.',
-                  },
-                  {
-                    id: 'meta',
-                    label: 'Meta AI',
-                    blurb: 'We can judge extractable claims for Meta AI / Llama retrieval.',
-                  },
-                  {
-                    id: 'perplexity',
-                    label: 'Perplexity',
-                    blurb: 'We can judge whether Perplexity would link this piece in an answer.',
-                  },
-                ] as const
-              ).map((engine) => (
-                <div key={engine.id} className={styles.demoCard}>
-                  <div className={styles.probeRowHead}>
-                    <strong>{engine.label}</strong>
-                    <span className={styles.badgeDemo}>Demo · no key yet</span>
-                  </div>
-                  <p className={styles.probeSoonBlurb}>{engine.blurb}</p>
-                  <p className={styles.lockedHint}>Capable — key not purchased for this demo</p>
+          {result?.citationProbes?.gemini &&
+            !result.citationProbes.gemini.skipped &&
+            result.citationProbes.gemini.ok && (
+              <div className={styles.probeRow}>
+                <div className={styles.probeRowHead}>
+                  <strong>Gemini</strong>
+                  <span className={styles.badgeLive}>Live</span>
+                  <span className={styles.probeMeta}>
+                    score {result.citationProbes.gemini.score} · would cite:{' '}
+                    {result.citationProbes.gemini.wouldCite ? 'yes' : 'leaning no'}
+                  </span>
                 </div>
-              ))}
+                {result.citationProbes.gemini.notes && (
+                  <p className={styles.probeNotes}>{result.citationProbes.gemini.notes}</p>
+                )}
+                {result.citationProbes.gemini.claimsItWouldQuote?.length > 0 && (
+                  <ul className={styles.probeClaims}>
+                    {result.citationProbes.gemini.claimsItWouldQuote.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+          {result?.scoreSignals &&
+            (result.scoreSignals.gaps.length > 0 || result.scoreSignals.strengths.length > 0) && (
+              <div className={styles.probeRow}>
+                <div className={styles.probeRowHead}>
+                  <strong>Article signals</strong>
+                  <span className={styles.badgeLive}>Deterministic</span>
+                  <span className={styles.probeMeta}>
+                    seed {result.scoreSignals.seedScore} · {result.scoreSignals.wordCount} words
+                  </span>
+                </div>
+                {result.scoreSignals.strengths.length > 0 && (
+                  <p className={styles.probeNotes}>
+                    Strengths: {result.scoreSignals.strengths.join(' · ')}
+                  </p>
+                )}
+                {result.scoreSignals.gaps.length > 0 && (
+                  <p className={styles.probeNotes}>
+                    Gaps: {result.scoreSignals.gaps.join(' · ')}
+                  </p>
+                )}
+              </div>
+            )}
+
+          {(!result?.citationProbes?.gemini || result.citationProbes.gemini.skipped) && (
+            <div className={styles.demoEngines}>
+              <div className={styles.demoEnginesHead}>
+                <h4>Other answer engines</h4>
+                <p>
+                  Same citeability check can run on Gemini, Grok, Meta AI, and Perplexity when keys
+                  are configured.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </section>
       )}
 

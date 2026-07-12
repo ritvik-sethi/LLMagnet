@@ -7,7 +7,12 @@ import {
   CITE_SCORE_MIN,
   CITE_SCORE_MAX,
 } from '../_shared/articleGate';
-import { blendCiteabilityScore, runCitationProbes } from '../_shared/citationProbe';
+import { runCitationProbes } from '../_shared/citationProbe';
+import {
+  blendThreeWayScore,
+  computeArticleScoreSignals,
+  formatSignalsBlock,
+} from '../_shared/scoreSignals';
 
 export const maxDuration = 90;
 
@@ -33,7 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Live probes: would OpenAI / Gemini actually cite this draft?
+    const signals = computeArticleScoreSignals(title, article);
     const probes = await runCitationProbes(title, article);
 
     if (probes.rejectedAsInvalid) {
@@ -50,6 +55,7 @@ export async function POST(request: Request) {
             gemini: probes.gemini,
             blendedProbeScore: probes.blendedScore,
           },
+          scoreSignals: signals,
         },
         { status: 400 }
       );
@@ -62,31 +68,38 @@ export async function POST(request: Request) {
 Article:
 ${article}
 
+${formatSignalsBlock(signals)}
+
 ${probes.evidenceBlock}
 
 SCORING RULES (non-negotiable):
 - Final overall "score" MUST be between ${CITE_SCORE_MIN} and ${CITE_SCORE_MAX} inclusive.
-- Weight the OpenAI and Gemini probe notes heavily — do not default to a stuck midpoint.
-- If probes say thin/missing attribution, score toward ${CITE_SCORE_MIN}–68. If dense & quotable, 74–${CITE_SCORE_MAX}.
-- Use editorial judgment (slightly arbitrary within the band is fine). Stay polite while critically useful.
+- Start from seedScore=${signals.seedScore}; move toward probe evidence (±12 unless probes violently disagree — then say why in notes).
+- Different articles must not share the same score. Never land on round midpoints.
+- Weight probes + seed heavily — do not invent a soft midpoint.
+- Thin / unsourced → toward ${CITE_SCORE_MIN}–55. Dense & quotable → 78–${CITE_SCORE_MAX}.
 - Matrix axis maxes MUST sum to 100. Axis scores MUST sum exactly to the overall score.
-- Matrix axis scores must track that overall band; notes must cite probe evidence or draft quotes.
-- Ground notes in E-E-A-T Trust + LLM cite signals (quotable claims, entities, extractability, headline–query fit).`,
+- Each axis note: Quote: «…» · Issue: … · Fix: …
+- citeLedger is required: entities + claimAudits + deskMoves — this is the product backbone, not optional colour.`,
     });
 
     const councilScore =
       typeof result.score === 'number' ? result.score : probes.blendedScore;
-    const finalScore = blendCiteabilityScore(councilScore, probes.blendedScore);
+    const finalScore = blendThreeWayScore(
+      councilScore,
+      probes.blendedScore,
+      signals.seedScore
+    );
     const displayScore = clampCiteScore(finalScore);
 
-    // Axis maxes already total 100; reshape scores so they SUM EXACTLY to displayScore
-    let shaped = reconcileBreakdownToScore(result.breakdown || [], displayScore);
+    const shaped = reconcileBreakdownToScore(result.breakdown || [], displayScore);
 
     return NextResponse.json({
       ...result,
       score: displayScore,
       breakdown: shaped,
       scoreBand: { min: CITE_SCORE_MIN, max: CITE_SCORE_MAX },
+      scoreSignals: signals,
       citationProbes: {
         openai: probes.openai,
         gemini: probes.gemini,
@@ -108,7 +121,6 @@ function reconcileBreakdownToScore(
   if (!breakdown.length) return breakdown;
 
   const maxSum = breakdown.reduce((a, b) => a + (Number(b.max) || 0), 0) || 100;
-  // Normalize maxes to sum to 100 (preserve relative weights)
   const withMax = breakdown.map((b) => {
     const max = Number(b.max) || 0;
     const normalizedMax =
@@ -116,7 +128,6 @@ function reconcileBreakdownToScore(
     return { ...b, max: normalizedMax, score: Number(b.score) || 0 };
   });
 
-  // Fix max rounding drift to exact 100
   let maxDrift = 100 - withMax.reduce((a, b) => a + b.max, 0);
   if (maxDrift !== 0) {
     const order = [...withMax.keys()].sort((i, j) => withMax[j].max - withMax[i].max);
@@ -136,7 +147,6 @@ function reconcileBreakdownToScore(
 
   const rawSum = withMax.reduce((a, b) => a + b.score, 0);
   if (rawSum <= 0) {
-    // Distribute target evenly by max weight
     return withMax.map((b) => ({
       ...b,
       score: Math.min(b.max, Math.round((b.max / 100) * targetScore)),
@@ -149,7 +159,6 @@ function reconcileBreakdownToScore(
     return { ...b, score: Math.min(b.max, Math.max(0, next)) };
   });
 
-  // Fix score rounding so sum === targetScore exactly
   let scoreDrift = targetScore - scaled.reduce((a, b) => a + b.score, 0);
   const order = [...scaled.keys()].sort((i, j) => scaled[j].max - scaled[i].max);
   let k = 0;

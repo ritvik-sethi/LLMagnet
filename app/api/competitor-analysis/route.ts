@@ -16,17 +16,11 @@ export const maxDuration = 120;
 const JUNK =
   /facebook\.com|fb\.com|instagram\.com|pinterest\.com|tiktok\.com|youtube\.com|x\.com|twitter\.com/i;
 
-/** Map common Indian outlet names in copy → hostname to exclude. */
+/** Map common outlet names in copy → hostname to exclude as “same site”. */
 const OUTLET_HINTS: { re: RegExp; host: string }[] = [
-  { re: /\binc42\b/i, host: 'inc42.com' },
-  { re: /\beconomic\s*times\b|\bet\s+prime\b/i, host: 'economictimes.indiatimes.com' },
-  { re: /\bmint\b|livemint/i, host: 'livemint.com' },
-  { re: /\byourstory\b/i, host: 'yourstory.com' },
-  { re: /\bentrackr\b/i, host: 'entrackr.com' },
   { re: /\btechcrunch\b/i, host: 'techcrunch.com' },
   { re: /\bthe\s+hindu\b/i, host: 'thehindu.com' },
   { re: /\bbusiness\s+standard\b/i, host: 'business-standard.com' },
-  { re: /\bmoneycontrol\b/i, host: 'moneycontrol.com' },
 ];
 
 function sameSite(url: string, blocked: Set<string>): boolean {
@@ -41,13 +35,16 @@ function sameSite(url: string, blocked: Set<string>): boolean {
 
 function blockedHostsFromSource(sourceUrl: string, content: string): Set<string> {
   const blocked = new Set<string>();
-  const fromUrl = hostnameOf(sourceUrl || '').toLowerCase();
+  const raw = (sourceUrl || '').trim();
+  const fromUrl =
+    raw.startsWith('http://') || raw.startsWith('https://')
+      ? hostnameOf(raw).toLowerCase()
+      : '';
   if (fromUrl) blocked.add(fromUrl);
 
-  // If draft clearly belongs to a named outlet (byline / "Inc42 asked"), exclude that site too
+  // If draft clearly belongs to a named outlet, exclude that site too
   for (const { re, host } of OUTLET_HINTS) {
     if (re.test(content) && (fromUrl.includes(host.split('.')[0]) || fromUrl === host || !fromUrl)) {
-      // Only auto-hint when sourceUrl matches that outlet, OR when sourceUrl empty but name appears often
       const mentions = (content.match(re) || []).length;
       if (fromUrl && (fromUrl === host || fromUrl.includes(host.split('.')[0]))) {
         blocked.add(host);
@@ -110,7 +107,7 @@ ${(content || '').slice(0, 3500)}
 
 Return ONLY JSON:
 {
-  "sourceOutletDomain": "hostname of the outlet this piece likely came from, e.g. inc42.com — or null if unknown",
+  "sourceOutletDomain": "hostname of the outlet this piece likely came from, or null if unknown",
   "googleSearches": ["5–6 Google queries a reporter would run to find OTHER outlets covering the same story/companies/angle"],
   "llmSearches": ["4–5 questions a user would ask ChatGPT/Gemini about this topic — the kind of answers rivals might already own"]
 }

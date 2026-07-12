@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import https from 'https';
+import { CITE_SCORE_MIN, CITE_SCORE_MAX, clampCiteScore } from './articleGate';
 
 export const SCORE_MIN = 0;
 export const SCORE_MAX = 100;
@@ -54,6 +55,25 @@ export interface RewriteChange {
   reason: string;
 }
 
+export interface CiteEntityRow {
+  name: string;
+  role: string;
+  citableFact: string;
+}
+
+export interface CiteClaimAudit {
+  claim: string;
+  wouldCite: boolean;
+  missing: string;
+  fix: string;
+}
+
+export interface CiteLedger {
+  entities: CiteEntityRow[];
+  claimAudits: CiteClaimAudit[];
+  deskMoves: string[];
+}
+
 export interface CouncilResult {
   score?: number;
   breakdown?: MatrixAxisScore[];
@@ -66,6 +86,8 @@ export interface CouncilResult {
     whereTheyClash: string;
   };
   reconciledAction: string;
+  /** Claim/entity ledger — the valuable backbone detail for scoring tools */
+  citeLedger?: CiteLedger;
   rewrittenContent?: string;
   /** Plain list of what was woven into the polish (shown at the end, not as markup) */
   additions?: string[];
@@ -79,53 +101,46 @@ export interface CouncilResult {
 }
 
 /** Agent-grade edit system: plan → evidence → act. No fluff. */
-const AGENT_PREAMBLE = `You are a supportive senior newsroom editor coaching a working reporter. Your job is to strengthen THIS article — never to belittle the writer.
+const AGENT_PREAMBLE = `You are a senior newsroom editor coaching a working reporter on THIS exact draft.
 
 Operating rules (non-negotiable):
-1. FOLLOW THE ARTICLE CLOSELY. Every point and suggestion MUST quote or paraphrase a specific phrase, name, number, or paragraph from THIS draft. Ban generic advice ("add more keywords", "improve readability", "use headings").
-2. Never invent facts. Use [NEED: …] when something must be reported.
-3. Advice must be article-specific and actionable on this exact copy.
-4. When web/X/competitor evidence is provided, tie advice to that evidence AND to the draft.
-5. TONE: Extremely polite while still critically useful. Soften the edge, keep the substance.
-   Frame gaps as opportunities ("You could strengthen…", "A reader may also want…", "An editor might still ask for…", "Consider adding…").
-   NEVER use dismissive or insulting language such as: vague, weak, lazy, poor, bad, confusing, pointless, amateur, fails, worthless, "this doesn't work", "no one will read".
-6. Prefer "opportunity" / "could go further" / "readers may still wonder" over harsh criticism.
-7. When scoring: use real editorial judgment (slightly arbitrary within the allowed band is fine). Do not always land on round midpoints. Do not invent a gimmick score.`;
+1. FOLLOW THE ARTICLE CLOSELY. Every point and suggestion MUST quote or paraphrase a specific phrase, name, number, or paragraph from THIS draft.
+2. BAN GENERIC ADVICE. Forbidden phrases (and close cousins): "add more keywords", "improve readability", "use headings", "strengthen E-E-A-T", "consider adding more detail", "readers may also want", "you could strengthen", "an editor might still ask". Replace any of those with a concrete edit naming the graf, company, and missing number/source.
+3. Never invent facts. Use [NEED: …] when something must be reported.
+4. Advice must be article-specific and actionable — name the paragraph, the entity, and the fix.
+5. TONE: Collegial and precise. Critically useful without insulting the writer.
+6. When scoring: be honestly arbitrary inside the allowed band. Different articles MUST get different scores. Never park on round midpoints (40/50/60/70/75/80/90).`;
 
 const VOICE_BLOCK = `You MUST answer as TWO sharply different editors. They are NOT allowed to say the same things.
-Stay constructive and respectful toward the writer in BOTH voices.
 
 ═══════════════════════════════════════
 humanEdge = THE READER (human audience)
 ═══════════════════════════════════════
-Lens: Would a busy human finish this? Trust it? Feel the story?
+Lens: Would a busy human finish this? Trust it? Feel the stakes?
 ONLY talk about: narrative hook, clarity of who/what/why, stakes, human context, lede/kicker, quote voice, fairness/trust.
-FORBIDDEN for this voice: "LLM", "citation", "entities for AI", "schema", "query matching", "extractable facts for models".
-FORBIDDEN tone words: vague, weak, bad, poor, lazy, confusing (as insults). Use constructive phrasing instead.
-Every point MUST include a short quote from the draft in quotation marks.
+FORBIDDEN for this voice: "LLM", "citation", "entities for AI", "schema", "query matching".
+Every point MUST include a short quote from the draft in quotation marks AND name what to change in that graf.
 
 ═══════════════════════════════════════
 seoEditor = THE MACHINE / AI CITATION EDITOR
 ═══════════════════════════════════════
-Lens: Would ChatGPT / Gemini / Claude confidently quote this when answering a user?
-ONLY talk about: quotable definitive sentences, named entities, numbers/dates, structure AI can parse, FAQ/Q&A opportunities, claim density, what query this could win.
-FORBIDDEN for this voice: "readers will bounce", "story arc", "emotional resonance" as the main point.
-FORBIDDEN tone words: same list as above — stay collegial.
-Every point MUST include a short quote from the draft in quotation marks OR name a missing citable fact tied to a line in the draft — framed as an addition opportunity.
+Lens: Would ChatGPT / Gemini confidently quote this when answering a user?
+ONLY talk about: quotable definitive sentences, named entities, ₹/$ / dates, extractable structure, claim density, which query this could win.
+Every point MUST include a short quote OR name a missing citable fact tied to a line in the draft — with the exact fix ("Add Peak XV as lead in graf 3 with [NEED: cheque size]").
 
 ═══════════════════════════════════════
 HARD SEPARATION
 ═══════════════════════════════════════
 - humanEdge.points and seoEditor.points must NOT overlap in meaning.
 - Also return "comparison": {
-    "readerLens": "1–2 constructive sentences: what a human reader still needs from THIS piece",
-    "aiLens": "1–2 constructive sentences: what would help an AI cite THIS piece",
-    "whereTheyClash": "1 sentence: the main tension between those needs on THIS draft (neutral, not insulting)"
+    "readerLens": "1–2 sentences naming what a human still needs from THIS piece (quote a graf)",
+    "aiLens": "1–2 sentences naming what an answer engine would / would not lift (quote a claim)",
+    "whereTheyClash": "one concrete clash on THIS draft"
   }
-- "reconciledAction": ONE supportive next edit that serves both.
+- reconciledAction: ONE next edit — name company + number/source + where to insert it.
 
 Each voice shape:
-{ "take": 2–4 constructive sentences about THIS article only, "points": 3–5 bullets each with a draft quote, "suggestions": 2–4 concrete edits naming the paragraph/claim to strengthen }`;
+{ "take": 2–4 precise sentences about THIS article only, "points": 3–5 bullets each with a draft quote + fix, "suggestions": 2–4 concrete edits naming the paragraph/claim }`;
 
 interface ToolProfile {
   deskBrief: string;
@@ -139,14 +154,21 @@ interface ToolProfile {
 const TOOLS: Record<ToolId, ToolProfile> = {
   'content-seo': {
     requireScore: true,
-    deskBrief: `TOOL: Score — deep citeability review for THIS news article
-You receive Live OpenAI + Gemini citation probes. Overall "score" MUST be 60–85 and MUST move with those probes (never stuck near 70).
-Use editorial judgment inside that band — a few points of honest variance is expected; avoid gimmicky midpoints.
-Ground scoring in real signals (not folklore):
-• Google E-E-A-T (Experience, Expertise, Authoritativeness, Trust) — Trust is central: attribution, accuracy cues, honesty of claims.
-• LLM citation research: quotable claim density; named entities + numbers; extractable 120–180-word chunks; headline–query / fan-out fit; information gain vs generic rewrite.
-Matrix notes MUST quote the draft OR probe notes (a name, number, missing attribution). Stay polite-critical.
-Reader voice: how the story lands for humans. Machine voice: how citeable those same lines are — reference probe wouldCite / notes. Do not merge them.`,
+    deskBrief: `TOOL: Score — deep citeability review for THIS news article (product backbone)
+You receive: (1) deterministic article signals with seedScore, (2) live OpenAI/Gemini citation probes.
+Overall "score" MUST be between 38 and 94 and MUST move with seedScore ± probes — never freeze near 70.
+Be honestly arbitrary: two different drafts should not share the same score.
+Ground scoring in:
+• Deterministic signals (entities, money marks, attribution, dates, length)
+• Google E-E-A-T Trust + attribution on THIS draft
+• LLM cite signals: quotable claims, extractable chunks, headline–query fit, information gain
+Matrix axis "note" format (REQUIRED): "Quote: «…» · Issue: … · Fix: …" — ban soft coaching.
+Also return "citeLedger": {
+  "entities": [{ "name","role","citableFact" }] (4–8 rows from THIS draft),
+  "claimAudits": [{ "claim","wouldCite","missing","fix" }] (5–7 claim-level audits),
+  "deskMoves": ["4–6 ultra-specific next edits naming graf + company + number/source"]
+}
+Reader voice ≠ machine voice. Reference probe wouldCite / notes and seed gaps.`,
     matrix: [
       {
         id: 'citationPotential',
@@ -196,7 +218,7 @@ Reader voice: how the story lands for humans. Machine voice: how citeable those 
   'semantic-seo': {
     requireScore: true,
     deskBrief: `TOOL: Semantic fit — entities & relationships IN THIS article
-Overall "score" MUST be 60–85. Use polite-critical editorial judgment; do not invent a gimmick midpoint.
+Overall "score" MUST be 38–94. Use precise editorial judgment; spread scores; do not invent a midpoint.
 Reader: can a human track who did what to whom? Machine: are entities explicit enough for AI to extract? Quote the draft.`,
     matrix: [
       { id: 'entityClarity', label: 'Entity Clarity', max: 22, rubric: 'Companies/people named cleanly in THIS draft.' },
@@ -234,7 +256,7 @@ No overlapping suggestions. Set shouldRewrite + rewritePitch for THIS piece.`,
   rewrite: {
     requireRewrite: true,
     deskBrief: `TOOL: Full polish — Indian business newsroom rewrite
-ROLE: You are a senior editor at an Indian business newsroom (think Inc42 / Economic Times). You rewrite for Indian founders, investors, and operators. Your polish should:
+ROLE: You are a senior editor at an Indian business newsroom. You rewrite for Indian founders, investors, and operators. Your polish should:
 - Cite and densify FACTS from the web research (names, rounds, valuations, market numbers, dates, rivals).
 - Sound OPINIONATED in the newsroom sense: sharp framing, stakes, "what this means for India's startup market" — woven into the prose, never labelled "Opinion:" or called out as opinion.
 - Allow careful SPECULATION where research supports it ("If this holds…", "One reading is…", "Investors may see…") — still never invent hard numbers.
@@ -357,7 +379,7 @@ export async function runCouncil(opts: RunCouncilOptions): Promise<CouncilResult
     : '';
 
   const scoreInstructions = profile.requireScore
-    ? `Return "score" (integer 60–85 only — editorial judgment inside that band; no gimmick midpoints) and "breakdown": [{ "id","label","max","score","note" }, ...] for every axis. Axis "max" values MUST sum to exactly 100. Axis "score" values MUST sum to exactly the overall "score". Axis notes must be polite-critical and quote the draft.`
+    ? `Return "score" (integer ${CITE_SCORE_MIN}–${CITE_SCORE_MAX} only — honestly arbitrary inside that band; never a round midpoint) and "breakdown": [{ "id","label","max","score","note" }, ...] for every axis. Axis "max" values MUST sum to exactly 100. Axis "score" values MUST sum to exactly the overall "score". Each axis "note" MUST use: Quote: «…» · Issue: … · Fix: …. Also return "citeLedger" with entities, claimAudits, deskMoves as specified in the desk brief.`
     : '';
 
   const rewriteInstructions = profile.requireRewrite
@@ -406,13 +428,13 @@ Return ONLY valid JSON:
   "comparison": { "readerLens": string, "aiLens": string, "whereTheyClash": string },
   "humanEdge": { "take", "points", "suggestions" },
   "seoEditor": { "take", "points", "suggestions" },
-  "reconciledAction": string
+  "reconciledAction": string${profile.requireScore ? ',\n  "citeLedger": { "entities": [...], "claimAudits": [...], "deskMoves": [...] }' : ''}
 }`;
 
   const completion = await getClient().chat.completions.create({
     messages: [{ role: 'user', content: prompt }],
     model: 'gpt-4o',
-    temperature: profile.requireScore ? 0 : 0.2,
+    temperature: profile.requireScore ? 0.45 : 0.2,
     response_format: { type: 'json_object' },
   });
 
@@ -449,9 +471,7 @@ Return ONLY valid JSON:
     if (typeof s !== 'number' || Number.isNaN(s) || s < SCORE_MIN || s > SCORE_MAX) {
       throw new Error('Council response missing a valid score');
     }
-    // Product band for news citeability: 60–85 (final clamp also applied in content-seo)
-    const clamped = Math.min(85, Math.max(60, Math.round(s)));
-    result.score = clamped;
+    result.score = clampCiteScore(s);
     const breakdown = Array.isArray(raw.breakdown) ? (raw.breakdown as MatrixAxisScore[]) : [];
     result.breakdown = breakdown.map((b) => ({
       id: b.id,
@@ -460,6 +480,36 @@ Return ONLY valid JSON:
       score: Number(b.score) || 0,
       note: b.note || '',
     }));
+
+    const ledger = raw.citeLedger as CiteLedger | undefined;
+    if (ledger && typeof ledger === 'object') {
+      result.citeLedger = {
+        entities: Array.isArray(ledger.entities)
+          ? ledger.entities
+              .filter((e) => e && typeof e.name === 'string')
+              .slice(0, 8)
+              .map((e) => ({
+                name: e.name || '',
+                role: e.role || '',
+                citableFact: e.citableFact || '',
+              }))
+          : [],
+        claimAudits: Array.isArray(ledger.claimAudits)
+          ? ledger.claimAudits
+              .filter((c) => c && typeof c.claim === 'string')
+              .slice(0, 7)
+              .map((c) => ({
+                claim: c.claim || '',
+                wouldCite: Boolean(c.wouldCite),
+                missing: c.missing || '',
+                fix: c.fix || '',
+              }))
+          : [],
+        deskMoves: Array.isArray(ledger.deskMoves)
+          ? ledger.deskMoves.filter((d) => typeof d === 'string' && d.trim()).slice(0, 6)
+          : [],
+      };
+    }
   }
 
   if (profile.requireRewrite) {

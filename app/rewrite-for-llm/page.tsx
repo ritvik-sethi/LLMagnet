@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { FaPenFancy, FaRocket, FaArrowRight, FaExternalLinkAlt, FaLink } from 'react-icons/fa';
+import { FaPenFancy, FaRocket, FaArrowRight, FaExternalLinkAlt } from 'react-icons/fa';
 import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import WowNote from '@/components/WowNote';
+import SampleArticlePicker from '@/components/SampleArticlePicker';
 import {
   setDraftHeading,
   setDraftBody,
@@ -17,6 +18,7 @@ import {
   lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
+import type { SampleArticle } from '@/lib/sampleArticles';
 
 interface ClaimResearchRow {
   claim: string;
@@ -56,17 +58,10 @@ export default function RewriteForLLM() {
   const [status, setStatus] = useState<CouncilStatus>('idle');
   const [result, setResult] = useState<RewriteResult | null>(null);
   const [phase, setPhase] = useState('');
-  const [urlInput, setUrlInput] = useState(sourceUrl || '');
-  const [fetching, setFetching] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(setCurrentStage('rewrite'));
   }, [dispatch]);
-
-  useEffect(() => {
-    if (sourceUrl && !urlInput) setUrlInput(sourceUrl);
-  }, [sourceUrl, urlInput]);
 
   const hasPrior =
     score != null ||
@@ -75,28 +70,13 @@ export default function RewriteForLLM() {
     (advice?.humanSuggestions?.length ?? 0) > 0 ||
     (advice?.machineSuggestions?.length ?? 0) > 0;
 
-  const fetchFromUrl = async () => {
-    setFetchError(null);
-    setFetching(true);
+  const loadSample = (article: SampleArticle) => {
+    dispatch(setDraftHeading(article.title));
+    dispatch(setDraftBody(article.body));
+    dispatch(setSourceUrl(article.url));
+    dispatch(lockStartedFrom());
     setResult(null);
     setStatus('idle');
-    try {
-      const res = await fetch('/api/fetch-article', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: urlInput.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fetch failed');
-      if (data.title) dispatch(setDraftHeading(data.title));
-      dispatch(setDraftBody(data.content));
-      dispatch(setSourceUrl(data.url));
-      dispatch(lockStartedFrom());
-    } catch (e) {
-      setFetchError(e instanceof Error ? e.message : 'Could not load that article');
-    } finally {
-      setFetching(false);
-    }
   };
 
   const run = async () => {
@@ -171,51 +151,18 @@ export default function RewriteForLLM() {
 
       {!hasPrior && (
         <p className="desk-meta" style={{ marginBottom: '1rem' }}>
-          Tip: run Score → Live check → Advice first so this polish inherits that context — or paste
-          a published URL below to load an article here.
+          Tip: run Score → Live check → Advice first so this polish inherits that context — or load
+          a sample article below.
         </p>
       )}
 
-      <div className="desk-panel" style={{ marginBottom: '1rem' }}>
-        <label className="desk-label">
-          <FaLink style={{ marginRight: 6 }} />
-          Paste a published article link
-        </label>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <input
-            className="desk-field"
-            type="url"
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && urlInput.trim() && !fetching) {
-                e.preventDefault();
-                void fetchFromUrl();
-              }
-            }}
-            placeholder="https://example.com/your-story"
-            style={{ flex: 1, minWidth: 220, marginBottom: 0 }}
-          />
-          <button
-            className="ce-primary-btn"
-            type="button"
-            disabled={fetching || !urlInput.trim()}
-            onClick={fetchFromUrl}
-          >
-            {fetching ? 'Pulling article…' : 'Import article'}
-          </button>
-        </div>
-        {fetchError && (
-          <p className="desk-meta" style={{ color: '#b91c1c', marginTop: 8 }}>
-            {fetchError}
-          </p>
-        )}
-        {sourceUrl && !fetchError && (
-          <p className="desk-meta" style={{ color: '#15803d', marginTop: 8 }}>
-            Loaded from {sourceUrl}
-          </p>
-        )}
-      </div>
+      <SampleArticlePicker activeUrl={sourceUrl} onSelect={loadSample} />
+
+      {sourceUrl && (
+        <p className="desk-meta" style={{ color: '#15803d', marginBottom: '1rem' }}>
+          Sample article loaded
+        </p>
+      )}
 
       <label className="desk-label">Headline</label>
       <input

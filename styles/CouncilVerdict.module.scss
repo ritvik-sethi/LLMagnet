@@ -514,6 +514,100 @@
   letter-spacing: 0.02em;
 }
 
+.ledger {
+  margin: 1.25rem 0 1.5rem;
+  padding: 1.1rem 1.15rem 1.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  border-radius: 12px;
+}
+
+.ledgerHead {
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: $text-secondary;
+  }
+}
+
+.ledgerBlock {
+  margin-top: 0.9rem;
+
+  h4 {
+    margin: 0 0 0.45rem;
+    font-family: $mono-stack;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $primary-color;
+  }
+}
+
+.ledgerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+
+  li {
+    padding: 0.7rem 0.8rem;
+    background: $paper;
+    border-radius: 0;
+    border: 1px solid $border-color;
+
+    strong {
+      display: block;
+      margin-bottom: 0.2rem;
+      color: $text-primary;
+      font-size: 0.92rem;
+    }
+
+    p {
+      margin: 0.2rem 0 0;
+      font-size: 0.84rem;
+      color: $text-secondary;
+      line-height: 1.4;
+    }
+  }
+}
+
+.deskMoves {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  li {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: $text-primary;
+  }
+}
+
+.matrixTotalHint {
+  font-family: $mono-stack;
+  font-size: 0.62rem;
+  color: $text-secondary;
+  letter-spacing: 0.04em;
+}
+
+.matrixTotal small {
+  font-size: 0.7em;
+  opacity: 0.65;
+  margin-left: 1px;
+}
+
 .severity {
   display: inline-block;
   font-family: $mono-stack;

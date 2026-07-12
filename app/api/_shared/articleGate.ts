@@ -30,9 +30,9 @@ const MIN_BODY_CHARS = 350;
 const MIN_WORDS = 60;
 const MIN_HEADLINE = 8;
 
-/** Product citeability band — honest mid-high newsroom scores, not 0–100 theatre. */
-export const CITE_SCORE_MIN = 60;
-export const CITE_SCORE_MAX = 85;
+/** Product citeability band — wide enough for honest variance, not 0–100 theatre. */
+export const CITE_SCORE_MIN = 38;
+export const CITE_SCORE_MAX = 94;
 
 function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -345,7 +345,7 @@ If accept is false, the product will show: "${INVALID_INPUT_MESSAGE}"`,
   }
 }
 
-/** Clamp citeability scores into the honest product band (60–85). */
+/** Clamp citeability scores into the product band. */
 export function clampCiteScore(n: number): number {
   const rounded = Math.round(n);
   return Math.min(CITE_SCORE_MAX, Math.max(CITE_SCORE_MIN, rounded));

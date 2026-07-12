@@ -39,6 +39,25 @@ export interface GapArtifact {
   howToClose: string;
 }
 
+export interface CiteEntityRow {
+  name: string;
+  role: string;
+  citableFact: string;
+}
+
+export interface CiteClaimAudit {
+  claim: string;
+  wouldCite: boolean;
+  missing: string;
+  fix: string;
+}
+
+export interface CiteLedger {
+  entities: CiteEntityRow[];
+  claimAudits: CiteClaimAudit[];
+  deskMoves: string[];
+}
+
 export interface CouncilResultView {
   score?: number;
   breakdown?: MatrixAxisScore[];
@@ -50,6 +69,7 @@ export interface CouncilResultView {
     whereTheyClash: string;
   };
   reconciledAction: string;
+  citeLedger?: CiteLedger;
   rewrittenContent?: string;
   changes?: { type: string; original?: string; revised?: string; reason: string }[];
   shouldRewrite?: boolean;
@@ -200,7 +220,8 @@ export default function CouncilVerdict({
             {typeof result.score === 'number' && (
               <div className={styles.matrixTotalWrap}>
                 <span className={styles.matrixTotalLabel}>Overall</span>
-                <span className={styles.matrixTotal}>{result.score}/100</span>
+                <span className={styles.matrixTotal}>{result.score}<small>/100</small></span>
+                <span className={styles.matrixTotalHint}>newsroom band 38–94</span>
               </div>
             )}
           </header>
@@ -253,6 +274,76 @@ export default function CouncilVerdict({
           </div>
         </section>
       )}
+
+      {result.citeLedger &&
+        ((result.citeLedger.entities?.length ?? 0) > 0 ||
+          (result.citeLedger.claimAudits?.length ?? 0) > 0 ||
+          (result.citeLedger.deskMoves?.length ?? 0) > 0) && (
+          <section className={styles.ledger}>
+            <header className={styles.ledgerHead}>
+              <h3>Cite ledger — what to densify</h3>
+              <p>Entity map, claim-level audits, and desk moves grounded in this draft</p>
+            </header>
+
+            {(result.citeLedger.entities?.length ?? 0) > 0 && (
+              <div className={styles.ledgerBlock}>
+                <h4>Entities</h4>
+                <ul className={styles.ledgerList}>
+                  {result.citeLedger.entities!.map((e, i) => (
+                    <li key={`${e.name}-${i}`}>
+                      <strong>{e.name}</strong>
+                      <span className={styles.meta}>{e.role}</span>
+                      <p>{e.citableFact}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {(result.citeLedger.claimAudits?.length ?? 0) > 0 && (
+              <div className={styles.ledgerBlock}>
+                <h4>Claim audits</h4>
+                <ul className={styles.ledgerList}>
+                  {result.citeLedger.claimAudits!.map((c, i) => (
+                    <li key={i}>
+                      <strong>
+                        <span
+                          className={`${styles.severity} ${
+                            c.wouldCite ? styles.low : styles.high
+                          }`}
+                        >
+                          {c.wouldCite ? 'would cite' : 'refuse'}
+                        </span>{' '}
+                        {c.claim}
+                      </strong>
+                      {c.missing && (
+                        <p>
+                          <em>Missing:</em> {c.missing}
+                        </p>
+                      )}
+                      {c.fix && (
+                        <p>
+                          <em>Fix:</em> {c.fix}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {(result.citeLedger.deskMoves?.length ?? 0) > 0 && (
+              <div className={styles.ledgerBlock}>
+                <h4>Desk moves</h4>
+                <ol className={styles.deskMoves}>
+                  {result.citeLedger.deskMoves!.map((m, i) => (
+                    <li key={i}>{m}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </section>
+        )}
 
       <div className={styles.voiceLabel}>Reader vs AI — on this article</div>
 
