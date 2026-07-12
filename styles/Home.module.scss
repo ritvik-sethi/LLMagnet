@@ -1,111 +1,144 @@
-// Variables
-$primary-color: #2563eb;
-$text-color: #1f2937;
-$light-gray: #f3f4f6;
-$border-color: #e5e7eb;
-
-// Mixins
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+@import 'variables';
 
 @mixin container {
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.1rem;
 }
 
-// Navigation
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  border-bottom: 1px solid $border-color;
-
-  .navContainer {
-    @include container;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: $text-color;
-    text-decoration: none;
-  }
-
-  .navLinks {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
-
-    a {
-      color: $text-color;
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: color 0.2s;
-
-      &:hover {
-        color: $primary-color;
-      }
-    }
-  }
-}
-
-// Hero Section
 .hero {
-  padding: 40px 0 10px;
-  background: linear-gradient(to bottom, #ffffff, $light-gray);
+  padding: 3.5rem 0 2.5rem;
+  background: transparent;
+  border-bottom: 1px solid $ink;
 
   .heroContainer {
     @include container;
-    text-align: center;
+    text-align: left;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: $text-color;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
+    font-size: clamp(2rem, 4.5vw, 3.1rem);
+    font-weight: 650;
+    color: $ink;
+    margin-bottom: 1rem;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
   }
 
   .subHeading {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: $primary-color;
-    margin-bottom: 1.5rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    font-weight: 500;
+    color: $text-primary;
+    margin-bottom: 0.85rem;
+    line-height: 1.45;
   }
 
   .subtitle {
-    font-size: 1rem;
-    color: #4b5563;
-    max-width: 2300px;
-    margin: 0 auto;
-    line-height: 1.6;
+    font-size: 0.98rem;
+    color: $text-secondary;
+    max-width: 40rem;
+    margin: 0 0 1.5rem;
+    line-height: 1.55;
   }
 }
 
-.heroLogo {
-  height: 3rem;
-  width: auto;
-  display: block;
-  margin: 0 auto 1.5rem auto;
+.heroEyebrow {
+  font-family: $mono-stack;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $primary-color;
+  margin-bottom: 0.75rem;
 }
 
-// Features Section
+.heroLogo {
+  height: 2.2rem;
+  width: auto;
+  display: block;
+  margin: 0 0 1.25rem;
+}
+
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: $ink !important;
+  color: #fafafa !important;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid $ink;
+  font-family: $mono-stack;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-decoration: none !important;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: transparent !important;
+    color: $ink !important;
+  }
+}
+
+.wowStrip {
+  border-bottom: 1px solid $ink;
+  background: $ink;
+  color: #fafafa;
+}
+
+.wowStripInner {
+  @include container;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  padding: 1.35rem 1.1rem;
+
+  strong {
+    display: block;
+    font-family: $mono-stack;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5eead4;
+    margin-bottom: 0.35rem;
+  }
+
+  span {
+    font-size: 0.9rem;
+    color: #d4d4d8;
+    line-height: 1.4;
+  }
+}
+
+.sectionHead {
+  margin-bottom: 0.5rem;
+}
+
+.sectionKicker {
+  font-family: $mono-stack;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $primary-color;
+  margin-bottom: 0.4rem;
+}
+
+.sectionTitle {
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: $ink;
+  max-width: 28rem;
+  line-height: 1.25;
+}
+
 .features {
-  padding: 80px 0;
-  background: white;
+  padding: 3.5rem 0;
+  background: transparent;
 
   .featuresContainer {
     @include container;
@@ -113,80 +146,67 @@ $border-color: #e5e7eb;
 
   .featuresGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-  }
-
-  .featureCard {
-    padding: 2rem;
-    border-radius: 12px;
-    background: white;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: block;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(37, 99, 235, 0.03);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-      &::after {
-        opacity: 1;
-      }
-
-      .icon {
-        transform: scale(1.1);
-        color: darken($primary-color, 10%);
-      }
-
-      .featureTitle {
-        color: $primary-color;
-      }
-    }
-
-    .icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 1.5rem;
-      color: $primary-color;
-      transition: all 0.3s ease;
-    }
-
-    .featureTitle {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: $text-color;
-      transition: color 0.3s ease;
-    }
-
-    .featureDescription {
-      color: #6b7280;
-      line-height: 1.6;
-    }
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0;
+    margin-top: 1.75rem;
+    border: 1px solid $ink;
   }
 }
 
-// How It Works Section
+.featureCard {
+  padding: 1.35rem 1.25rem;
+  background: rgba(255, 255, 255, 0.82);
+  border-right: 1px solid $ink;
+  border-bottom: 1px solid $ink;
+  text-decoration: none !important;
+  display: block;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #fff;
+
+    .featureTitle {
+      color: $primary-color;
+    }
+  }
+
+  .icon {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0.85rem;
+    color: $primary-color;
+  }
+}
+
+.featureTitle {
+  font-size: 1.1rem;
+  font-weight: 650;
+  margin-bottom: 0.45rem;
+  color: $ink;
+  letter-spacing: -0.02em;
+}
+
+.featureDescription {
+  color: $text-secondary;
+  line-height: 1.5;
+  font-size: 0.92rem;
+  margin-bottom: 0.75rem;
+}
+
+.featureWow {
+  font-family: $mono-stack;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: $ink;
+  border-top: 1px solid $border-color;
+  padding-top: 0.65rem;
+  margin: 0;
+}
+
 .howItWorks {
-  padding: 80px 0;
-  background: $light-gray;
+  padding: 3.5rem 0 4rem;
+  background: rgba(255, 255, 255, 0.55);
+  border-top: 1px solid $ink;
 
   .howItWorksContainer {
     @include container;
@@ -195,62 +215,69 @@ $border-color: #e5e7eb;
   .steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: 0;
+    margin-top: 1.75rem;
+    border: 1px solid $ink;
   }
 
   .step {
-    text-align: center;
-    padding: 2rem;
+    padding: 1.35rem 1.25rem;
+    border-right: 1px solid $ink;
+    background: rgba(255, 255, 255, 0.85);
 
-    .stepNumber {
-      width: 40px;
-      height: 40px;
-      background: $primary-color;
-      color: white;
-      border-radius: 50%;
-      @include flex-center;
-      margin: 0 auto 1rem;
-      font-weight: 600;
+    &:last-child {
+      border-right: none;
     }
+  }
 
-    .stepTitle {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: $text-color;
-    }
+  .stepNumber {
+    font-family: $mono-stack;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid $ink;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 0.85rem;
+    background: $ink;
+    color: #fafafa;
+  }
 
-    .stepDescription {
-      color: #6b7280;
-      line-height: 1.6;
-    }
+  .stepTitle {
+    font-size: 1.05rem;
+    font-weight: 650;
+    margin-bottom: 0.4rem;
+    color: $ink;
+  }
+
+  .stepDescription {
+    color: $text-secondary;
+    line-height: 1.5;
+    font-size: 0.9rem;
   }
 }
 
-// Responsive Design
+.howCtaWrap {
+  margin-top: 1.75rem;
+}
+
 @media (max-width: 768px) {
-  .nav {
-    .navLinks {
-      display: none;
-    }
+  .wowStripInner {
+    grid-template-columns: 1fr;
   }
 
-  .hero {
-    .title {
-      font-size: 1.5rem;
-    }
-    .subHeading {
-      font-size: 1.25rem;
-    }
-    .subtitle {
-      font-size: 1rem;
-    }
+  .howItWorks .steps {
+    grid-template-columns: 1fr;
   }
 
-  .howItWorks {
-    .steps {
-      grid-template-columns: 1fr;
+  .howItWorks .step {
+    border-right: none;
+    border-bottom: 1px solid $ink;
+
+    &:last-child {
+      border-bottom: none;
     }
   }
-} 
+}

@@ -1,43 +1,47 @@
 @import './variables';
 
 .container {
-  max-width: 1200px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.75rem 1.1rem 3rem;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 3rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
 
   .title {
-    font-size: 2.5rem;
-    color: $primary-color;
-    margin-bottom: 1rem;
+    font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+    color: $ink;
+    margin-bottom: 0.4rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1rem;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    letter-spacing: -0.03em;
+    font-weight: 650;
 
     .icon {
-      font-size: 2rem;
+      font-size: 1.25rem;
+      color: $primary-color;
     }
   }
 
   .subtitle {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     color: $text-secondary;
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: 40rem;
+    margin: 0;
   }
 }
 
 .inputContainer {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: $box-shadow;
-  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: $radius;
+  padding: 1.1rem;
+  box-shadow: none;
+  border: 1px solid $ink;
+  margin-bottom: 1.25rem;
 }
 
 .headingInput {

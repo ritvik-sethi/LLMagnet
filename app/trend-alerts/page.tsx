@@ -23,7 +23,7 @@ export default function TrendAlerts() {
   const [result, setResult] = useState<CouncilResultView | null>(null);
 
   useEffect(() => {
-    dispatch(setCurrentStage('discover'));
+    dispatch(setCurrentStage('live'));
   }, [dispatch]);
 
   const run = async () => {
@@ -36,7 +36,7 @@ export default function TrendAlerts() {
       });
       if (!res.ok) throw new Error('failed');
       setResult((await res.json()) as CouncilResultView);
-      dispatch(markStageComplete('discover'));
+      dispatch(markStageComplete('live'));
       setStatus('success');
     } catch {
       setStatus('error');
@@ -46,10 +46,11 @@ export default function TrendAlerts() {
   return (
     <main style={{ maxWidth: 1000, margin: '0 auto', padding: '2rem 1rem' }}>
       <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <FaChartLine /> Trends
+        <FaChartLine /> Trend Alerts
       </h1>
       <p style={{ color: '#6b7280', marginBottom: '1.25rem' }}>
-        Find the angle. Start a new story from a trend, or pressure-test the one you&apos;re drafting.
+        Surface angles a newsroom covering Indian startups should pursue now — Human Edge for the
+        story hook, SEO Specialist for what AIs will cite this week.
       </p>
 
       <input
@@ -66,12 +67,21 @@ export default function TrendAlerts() {
         rows={8}
         style={{ width: '100%', padding: '0.6rem', marginBottom: '1rem' }}
       />
-      <button className="ce-primary-btn" onClick={run} disabled={status === 'loading' || (!heading.trim() && !body.trim())}>
-        <FaRocket /> {status === 'loading' ? 'Convening the council...' : 'Find trending angles'}
+      <button
+        className="ce-primary-btn"
+        onClick={run}
+        disabled={status === 'loading' || (!heading.trim() && !body.trim())}
+      >
+        <FaRocket /> {status === 'loading' ? 'Scanning angles…' : 'Find trending angles'}
       </button>
 
       <div style={{ marginTop: '1.5rem' }}>
-        <CouncilVerdict status={status} result={result} onRetry={run} idleHint="Run Trends to hear from The Reader and The Machine." />
+        <CouncilVerdict
+          status={status}
+          result={result}
+          onRetry={run}
+          idleHint="Run Trends to get angles plus both desk views."
+        />
       </div>
 
       {status === 'success' && (
@@ -83,7 +93,7 @@ export default function TrendAlerts() {
             router.push('/content-seo-score');
           }}
         >
-          <FaArrowRight /> Draft &amp; score this
+          <FaArrowRight /> Next: Score this draft
         </button>
       )}
     </main>

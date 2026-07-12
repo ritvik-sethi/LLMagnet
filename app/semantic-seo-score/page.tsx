@@ -24,6 +24,7 @@ export default function SemanticScore() {
 
   const [status, setStatus] = useState<CouncilStatus>('idle');
   const [result, setResult] = useState<CouncilResultView | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     dispatch(setCurrentStage('score'));
@@ -31,19 +32,29 @@ export default function SemanticScore() {
 
   const handleAnalyze = async () => {
     setStatus('loading');
+    setErrorMsg('');
     try {
       const response = await fetch('/api/semantic-seo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metaTitle: heading, content: body }),
       });
-      if (!response.ok) throw new Error('Failed to analyze content');
-      const data = (await response.json()) as CouncilResultView;
-      setResult(data);
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMsg(
+          (data && data.error) ||
+            'ENTER A VALID PROMPT LINK — this desk only scores real news articles.'
+        );
+        setResult(null);
+        setStatus('error');
+        return;
+      }
+      setResult(data as CouncilResultView);
       if (typeof data.score === 'number') dispatch(setSemanticScore(data.score));
       dispatch(markStageComplete('score'));
       setStatus('success');
     } catch {
+      setErrorMsg('Could not analyze this draft. Try again in a moment.');
       setStatus('error');
     }
   };
@@ -57,7 +68,8 @@ export default function SemanticScore() {
             <div>
               <h1 className={styles.title}>Semantic SEO Analyzer</h1>
               <p className={styles.subtitle}>
-                Judge how well your article maps to what AI search understands — with both council voices.
+                Check entity clarity, relationships, and query coverage — then hear The Human Edge and
+                The SEO Specialist Editor on what AI search will actually parse.
               </p>
             </div>
           </div>
@@ -98,8 +110,25 @@ export default function SemanticScore() {
             disabled={status === 'loading' || !body.trim()}
           >
             <FaBrain />
-            {status === 'loading' ? 'Convening the council...' : 'Score & convene council'}
+            {status === 'loading' ? 'Running desk review…' : 'Score & open desk review'}
           </button>
+
+          {errorMsg && (
+            <div
+              role="alert"
+              style={{
+                marginTop: '1rem',
+                padding: '0.9rem 1.1rem',
+                border: '1px solid #fca5a5',
+                background: '#fef2f2',
+                color: '#991b1b',
+                fontSize: '0.92rem',
+                lineHeight: 1.45,
+              }}
+            >
+              {errorMsg}
+            </div>
+          )}
         </div>
       </section>
 
@@ -124,7 +153,7 @@ export default function SemanticScore() {
           status={status}
           result={result}
           onRetry={handleAnalyze}
-          idleHint="Score your article to hear from The Reader and The Machine."
+          idleHint="Score the article to see the semantic matrix plus both desk views."
         />
       </div>
 
@@ -133,12 +162,12 @@ export default function SemanticScore() {
           <button
             className={styles.rewriteButton}
             onClick={() => {
-              dispatch(setCurrentStage('rewrite'));
-              router.push('/rewrite-for-llm');
+              dispatch(setCurrentStage('suggest'));
+              router.push('/desk-suggest');
             }}
           >
             <FaArrowRight />
-            Send to Rewrite
+            Next: Desk suggestions
           </button>
         </section>
       )}

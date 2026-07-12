@@ -1,32 +1,41 @@
 'use client';
 
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
-import NavBar from "./NavBar";
-import PipelineRail from "@/components/PipelineRail";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+import NavBar from './NavBar';
+import PipelineRail from '@/components/PipelineRail';
 
-const inter = Inter({ subsets: ["latin"] });
+const plexSans = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-plex-sans',
+  display: 'swap',
+});
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-mono',
+  display: 'swap',
+});
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <title>Engineering Discoverability for the Next Generation of Search</title>
-        <meta name="description" content="Optimize your content to boost search rankings and earn more LLM citations. Our comprehensive suite of SEO tools helps you analyze, optimize, and improve your content's performance in search engines." />
+        <title>LLMagnet — write once, get cited</title>
+        <meta
+          name="description"
+          content="A newsroom desk for citeable stories: score your draft, check Google and X, polish with tracked changes, and see what rivals covered."
+        />
         <meta name="color-scheme" content="light" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="shortcut icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/logo.svg" />
       </head>
-      <body className={inter.className}>
+      <body className={`${plexSans.variable} ${plexMono.variable} ${plexSans.className}`}>
         <Providers>
           <NavBar />
-          <div style={{ paddingTop: 70 }}>
+          <div className="app-shell">
             <PipelineRail />
             {children}
           </div>

@@ -1,99 +1,93 @@
-// Colors
-$primary-color: #2563eb;
-$primary-hover: #1d4ed8;
-$secondary-color: #7c3aed;
-$text-primary: #1f2937;
-$text-secondary: #6b7280;
-$text-dark: #1f2937;
-$text-muted: #6b7280;
-$background-light: #f3f4f6;
-$background-dark: #1e1e1e;
-$border-color: #e5e7eb;
-$success-color: #10b981;
-$warning-color: #f59e0b;
-$error-color: #ef4444;
+// LLMagnet — newsroom IDE tokens (sharp, mono chrome, no purple glow)
 
-// Shadows
-$card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-$box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$primary-color: #0f766e; // teal ink
+$primary-hover: #0d9488;
+$secondary-color: #b45309; // amber desk accent
+$text-primary: #121212;
+$text-secondary: #52525b;
+$text-dark: #09090b;
+$text-muted: #71717a;
+$background-light: #f4f4f5;
+$background-dark: #18181b;
+$border-color: #d4d4d8;
+$success-color: #15803d;
+$warning-color: #a16207;
+$error-color: #b91c1c;
 
-// Mixins
+$ink: #121212;
+$paper: #f7f6f2;
+$grid: rgba(18, 18, 18, 0.06);
+$mono-stack: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+$sans-stack: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+
+$card-shadow: none;
+$box-shadow: none;
+$radius: 2px;
+
 @mixin primary-button {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
+  background: $ink;
+  color: #fafafa;
+  padding: 0.65rem 1.1rem;
+  border-radius: $radius;
+  border: 1px solid $ink;
+  font-family: $mono-stack;
+  font-size: 0.8rem;
   font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px #2563eb66;
+    background: transparent;
+    color: $ink;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.45;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
 
   .icon {
-    font-size: 1.1rem;
-    color: white;
+    font-size: 0.95rem;
+    color: inherit;
   }
 }
 
 @mixin secondary-button {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-size: 1rem;
+  background: transparent;
+  color: $ink;
+  padding: 0.65rem 1.1rem;
+  border-radius: $radius;
+  border: 1px solid $ink;
+  font-family: $mono-stack;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px #2563eb66;
+    background: $ink;
+    color: #fafafa;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.45;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
 
   .icon {
-    font-size: 1.1rem;
-    color: white;
+    font-size: 0.95rem;
+    color: inherit;
   }
 }
 
-@mixin loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s linear infinite;
-  margin-right: 0.5rem;
+@mixin glass-effect {
+  background: rgba(247, 246, 242, 0.92);
+  border: 1px solid $border-color;
 }
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-} 

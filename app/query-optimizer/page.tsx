@@ -23,7 +23,7 @@ export default function QueryOptimizer() {
   const [result, setResult] = useState<CouncilResultView | null>(null);
 
   useEffect(() => {
-    dispatch(setCurrentStage('target'));
+    dispatch(setCurrentStage('suggest'));
   }, [dispatch]);
 
   const run = async () => {
@@ -36,7 +36,7 @@ export default function QueryOptimizer() {
       });
       if (!res.ok) throw new Error('failed');
       setResult((await res.json()) as CouncilResultView);
-      dispatch(markStageComplete('target'));
+      dispatch(markStageComplete('suggest'));
       setStatus('success');
     } catch {
       setStatus('error');
@@ -49,7 +49,8 @@ export default function QueryOptimizer() {
         <FaBullseye /> Query Optimizer
       </h1>
       <p style={{ color: '#6b7280', marginBottom: '1.25rem' }}>
-        Find the queries your Indian-startup story should be cited for — judged by both council voices.
+        Find the questions this Indian-startup story should win citations for — then hear both desk
+        views on which ones readers care about vs which ones AIs will cite.
       </p>
 
       <input
@@ -67,11 +68,16 @@ export default function QueryOptimizer() {
         style={{ width: '100%', padding: '0.6rem', marginBottom: '1rem' }}
       />
       <button className="ce-primary-btn" onClick={run} disabled={status === 'loading' || !body.trim()}>
-        <FaRocket /> {status === 'loading' ? 'Convening the council...' : 'Optimize queries & convene council'}
+        <FaRocket /> {status === 'loading' ? 'Mapping queries…' : 'Map target queries'}
       </button>
 
       <div style={{ marginTop: '1.5rem' }}>
-        <CouncilVerdict status={status} result={result} onRetry={run} idleHint="Run the optimizer to hear from The Reader and The Machine." />
+        <CouncilVerdict
+          status={status}
+          result={result}
+          onRetry={run}
+          idleHint="Run the optimizer to get target queries plus both desk views."
+        />
       </div>
 
       {status === 'success' && (
@@ -83,7 +89,7 @@ export default function QueryOptimizer() {
             router.push('/rewrite-for-llm');
           }}
         >
-          <FaArrowRight /> Send to Rewrite
+          <FaArrowRight /> Next: Rewrite for citability
         </button>
       )}
     </main>

@@ -3,17 +3,35 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
-import { STAGES, StageStatus } from '@/store/slices/editorialDraftSlice';
+import {
+  STAGES,
+  StageId,
+  StageStatus,
+  clearPersistedDraft,
+  resolveActiveStage,
+  resetDraft,
+} from '@/store/slices/editorialDraftSlice';
 import styles from '../styles/PipelineRail.module.scss';
+
+function visualStatus(
+  stageId: StageId,
+  activeId: StageId | null,
+  completed: boolean
+): StageStatus {
+  if (activeId === stageId) return 'current';
+  if (completed) return 'completed';
+  return 'upcoming';
+}
 
 export default function PipelineRail() {
   const pathname = usePathname();
+  const dispatch = useDispatch();
   const stageStatus = useSelector((s: RootState) => s.editorialDraft.stageStatus);
   const citabilityScore = useSelector((s: RootState) => s.editorialDraft.citabilityScore);
+  const activeId = resolveActiveStage(pathname);
 
-  // Brief visual "bump" so a re-score is legible in a fast demo (KTD6 / R3).
   const prevScore = useRef<number | null>(null);
   const [bumped, setBumped] = useState(false);
   useEffect(() => {
@@ -26,33 +44,51 @@ export default function PipelineRail() {
     prevScore.current = citabilityScore;
   }, [citabilityScore]);
 
-  const stateClass = (status: StageStatus, isRouteActive: boolean) => {
-    if (status === 'completed') return styles.completed;
-    if (status === 'current' || isRouteActive) return styles.current;
-    return styles.upcoming;
+  const onReset = () => {
+    clearPersistedDraft();
+    dispatch(resetDraft());
   };
 
   return (
     <div className={styles.rail} aria-label="Editorial pipeline progress">
       <ol className={styles.stages}>
         {STAGES.map((stage, i) => {
-          const status = stageStatus[stage.id];
-          const isRouteActive = pathname === stage.path && status !== 'completed';
+          const status = visualStatus(
+            stage.id,
+            activeId,
+            stageStatus[stage.id] === 'completed'
+          );
           return (
-            <li key={stage.id} className={stateClass(status, isRouteActive)}>
-              <Link href={stage.path} className={styles.stageLink}>
-                <span className={styles.stageIndex}>{status === 'completed' ? '✓' : i + 1}</span>
+            <li key={stage.id} className={styles[status]}>
+              <Link
+                href={stage.path}
+                className={styles.stageLink}
+                aria-current={activeId === stage.id ? 'step' : undefined}
+              >
+                <span className={styles.stageIndex}>
+                  {status === 'completed' && activeId !== stage.id ? '✓' : i + 1}
+                </span>
                 <span className={styles.stageLabel}>{stage.label}</span>
               </Link>
             </li>
           );
         })}
       </ol>
-      <div className={`${styles.score} ${bumped ? styles.bump : ''}`}>
-        <span className={styles.scoreLabel}>Citability</span>
-        <span className={styles.scoreValue}>
-          {citabilityScore === null ? 'not scored yet' : `${citabilityScore}/100`}
-        </span>
+      <div className={styles.railEnd}>
+        <div className={`${styles.score} ${bumped ? styles.bump : ''}`}>
+          <span className={styles.scoreLabel}>How citeable</span>
+          <span className={styles.scoreValue}>
+            {citabilityScore === null ? 'not scored yet' : `${citabilityScore}/100`}
+          </span>
+        </div>
+        <button
+          type="button"
+          className={`reset ${styles.reset}`}
+          onClick={onReset}
+          title="Start over with a fresh draft"
+        >
+          Start over
+        </button>
       </div>
     </div>
   );

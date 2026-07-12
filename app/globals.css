@@ -1,21 +1,35 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7f6f2;
+  --ink: #121212;
+  --muted: #71717a;
+  --line: #d4d4d8;
+  --teal: #0f766e;
+  --amber: #b45309;
+  --mono: var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: var(--font-plex-sans), 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --radius: 2px;
 }
 
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  color-scheme: light !important;
-  background-color: #ffffff !important;
-  color: #171717 !important;
+  color-scheme: light;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -27,124 +41,194 @@ body {
 }
 
 a {
-  color: inherit;
+  color: var(--teal);
   text-decoration: none;
 }
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
-/* Ensure all form elements use light theme */
-input, textarea, select, button {
-  background-color: #ffffff !important;
-  color: #171717 !important;
-  border-color: #d1d5db !important;
+h1, h2, h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+code, kbd, .mono {
+  font-family: var(--mono);
+}
+
+/* Form chrome — editor inputs */
+input, textarea, select {
+  background-color: #fff !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  font-family: var(--sans) !important;
+  box-shadow: none !important;
 }
 
 input:focus, textarea:focus, select:focus {
-  background-color: #ffffff !important;
-  color: #171717 !important;
-  border-color: #2563eb !important;
-  outline: none !important;
+  border-color: var(--ink) !important;
+  outline: 1px solid var(--ink) !important;
+  outline-offset: 0 !important;
 }
 
-/* Global button styles - all buttons use linear gradient with white text */
-button, .btn, [role="button"] {
-  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-  color: white !important;
-  border: 1px solid transparent !important;
-  transition: all 0.3s ease !important;
+textarea {
+  font-family: var(--mono) !important;
+  font-size: 0.86rem !important;
+  line-height: 1.6 !important;
 }
 
-button:hover:not(:disabled), .btn:hover:not(:disabled), [role="button"]:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px #2563eb66 !important;
+/* Kill legacy purple gradients — sharp ink buttons */
+button, .btn, [role="button"],
+input[type="submit"], input[type="button"], input[type="reset"],
+[class*="button"], [class*="Button"], [class*="btn"], [class*="Btn"] {
+  background: var(--ink) !important;
+  color: #fafafa !important;
+  border: 1px solid var(--ink) !important;
+  border-radius: var(--radius) !important;
+  font-family: var(--mono) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
 }
 
-button:disabled, .btn:disabled, [role="button"]:disabled {
-  opacity: 0.6 !important;
+button:hover:not(:disabled), .btn:hover:not(:disabled), [role="button"]:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled), input[type="button"]:hover:not(:disabled),
+[class*="button"]:hover:not(:disabled), [class*="Button"]:hover:not(:disabled),
+[class*="btn"]:hover:not(:disabled), [class*="Btn"]:hover:not(:disabled) {
+  background: transparent !important;
+  color: var(--ink) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+button:disabled, .btn:disabled, [role="button"]:disabled,
+[class*="button"]:disabled, [class*="Button"]:disabled,
+[class*="btn"]:disabled, [class*="Btn"]:disabled {
+  opacity: 0.45 !important;
   cursor: not-allowed !important;
   transform: none !important;
   box-shadow: none !important;
 }
 
-/* Additional button-like elements */
-input[type="submit"], input[type="button"], input[type="reset"] {
-  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-  color: white !important;
-  border: 1px solid transparent !important;
-  transition: all 0.3s ease !important;
-}
-
-input[type="submit"]:hover:not(:disabled), input[type="button"]:hover:not(:disabled), input[type="reset"]:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px #2563eb66 !important;
-}
-
-input[type="submit"]:disabled, input[type="button"]:disabled, input[type="reset"]:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* Ensure icons in buttons are white */
 button svg, .btn svg, [role="button"] svg,
 button i, .btn i, [role="button"] i {
-  color: white !important;
-  fill: white !important;
+  color: inherit !important;
+  fill: currentColor !important;
 }
 
-/* Catch any remaining button-like elements */
-[class*="button"], [class*="Button"], [class*="btn"], [class*="Btn"] {
-  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-  color: white !important;
-  border: 1px solid transparent !important;
-  transition: all 0.3s ease !important;
+/* Ghost / reset exceptions */
+button.reset, .reset, [data-variant="ghost"] {
+  background: transparent !important;
+  color: var(--muted) !important;
+  border-color: var(--line) !important;
+}
+button.reset:hover, .reset:hover {
+  color: var(--ink) !important;
+  border-color: var(--ink) !important;
+  background: transparent !important;
 }
 
-[class*="button"]:hover:not(:disabled), [class*="Button"]:hover:not(:disabled), [class*="btn"]:hover:not(:disabled), [class*="Btn"]:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px #2563eb66 !important;
-}
-
-[class*="button"]:disabled, [class*="Button"]:disabled, [class*="btn"]:disabled, [class*="Btn"]:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* Ensure any NextUI components use light theme */
-[data-theme] {
-  color-scheme: light !important;
-}
-
-/* Override any dark theme styles */
-[data-theme="dark"] {
-  --background: #ffffff !important;
-  --foreground: #171717 !important;
-  background-color: #ffffff !important;
-  color: #171717 !important;
-}
-
-/* Shared primary button for pipeline-wired tool pages */
 .ce-primary-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: #fff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
+  background: var(--ink) !important;
+  color: #fafafa !important;
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--ink);
+  font-family: var(--mono);
+  font-size: 0.8rem;
   font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .ce-primary-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  background: transparent !important;
+  color: var(--ink) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 .ce-primary-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* Desk page shell helpers */
+.desk-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.75rem 1.1rem 3rem;
+}
+
+.desk-kicker {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.4rem;
+}
+
+.desk-title {
+  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.desk-lede {
+  color: var(--muted);
+  max-width: 40rem;
+  margin-bottom: 1.35rem;
+  font-size: 0.95rem;
+}
+
+.desk-panel {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.desk-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.desk-field {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.desk-meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.app-shell {
+  padding-top: 64px;
+  min-height: 100vh;
 }

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLMagnet — Overview</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧲</text></svg>">
+<style>
+  :root {
+    --ink: #0c0e13;
+    --ink-2: #12151d;
+    --panel: #171b25;
+    --line: rgba(255,255,255,0.09);
+    --line-2: rgba(255,255,255,0.16);
+    --text-hi: #f3f2ec;
+    --text-lo: #9aa2b2;
+    --machine: #3f8cff;
+    --reader: #f2a13d;
+    --violet: #8b6cf0;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y proximity; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  .deck { background: var(--ink); color: var(--text-hi); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+  .slide {
+    position: relative; min-height: 100vh; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: clamp(2rem, 6vw, 6rem); padding-right: clamp(2rem, 6vw, 7.5rem);
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(120% 80% at 100% 0%, rgba(63,140,255,0.07), transparent 55%),
+      radial-gradient(90% 70% at 0% 100%, rgba(242,161,61,0.04), transparent 55%);
+  }
+  .wrap { width: 100%; max-width: 1000px; margin: 0 auto; }
+
+  .eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--machine); margin: 0 0 1.4rem; display: flex; align-items: center; gap: 0.8rem; }
+  .eyebrow::before { content: ""; width: 26px; height: 1px; background: var(--machine); display: inline-block; }
+
+  h1.title { font-family: var(--serif); font-weight: 700; font-size: clamp(3.2rem, 11vw, 8rem); line-height: 0.92; letter-spacing: -0.02em; margin: 0 0 1.6rem; text-wrap: balance; }
+  h1.title .glow { color: var(--machine); }
+
+  h2 { font-family: var(--serif); font-weight: 700; font-size: clamp(2rem, 5.2vw, 3.6rem); line-height: 1.04; letter-spacing: -0.015em; margin: 0 0 1.5rem; max-width: 22ch; text-wrap: balance; }
+
+  .lede { font-size: clamp(1.05rem, 2vw, 1.4rem); line-height: 1.5; color: var(--text-hi); max-width: 60ch; margin: 0 0 1.1rem; }
+  .body { font-size: clamp(0.98rem, 1.5vw, 1.12rem); line-height: 1.65; color: var(--text-lo); max-width: 64ch; margin: 0 0 1rem; }
+  .body strong { color: var(--text-hi); font-weight: 600; }
+
+  .linkchip { display: inline-flex; align-items: center; gap: 0.6rem; margin-top: 1.5rem; padding: 0.7rem 1.2rem; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(63,140,255,0.08); color: var(--text-hi); text-decoration: none; font-family: var(--mono); font-size: 0.95rem; letter-spacing: 0.02em; transition: border-color .2s, background .2s, transform .2s; }
+  .linkchip:hover { border-color: var(--machine); background: rgba(63,140,255,0.16); transform: translateY(-2px); }
+  .linkchip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--machine); box-shadow: 0 0 10px var(--machine); }
+  .linkchip:focus-visible { outline: 2px solid var(--machine); outline-offset: 3px; }
+
+  .hint { position: absolute; left: clamp(2rem, 6vw, 6rem); bottom: 2rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-lo); opacity: 0.7; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: 2rem; }
+  .card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 1.5rem 1.4rem; }
+  .card .k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet); margin: 0 0 0.7rem; }
+  .card h3 { font-family: var(--serif); font-size: 1.3rem; margin: 0 0 0.5rem; line-height: 1.1; }
+  .card p { font-size: 0.95rem; line-height: 1.55; color: var(--text-lo); margin: 0; }
+
+  .duo { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 1.2rem; margin-top: 2rem; }
+  .voice { border: 1px solid var(--line); border-radius: 14px; padding: 1.6rem 1.5rem; background: var(--ink-2); }
+  .voice .vhead { display: flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 1rem; }
+  .voice .vhead .swatch { width: 12px; height: 12px; border-radius: 3px; }
+  .voice.reader { border-top: 3px solid var(--reader); } .voice.reader .vhead { color: var(--reader); } .voice.reader .swatch { background: var(--reader); }
+  .voice.machine { border-top: 3px solid var(--machine); } .voice.machine .vhead { color: var(--machine); } .voice.machine .swatch { background: var(--machine); }
+  .voice ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .voice li { font-size: 0.95rem; line-height: 1.4; color: var(--text-lo); }
+  .bridge { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--violet); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; }
+  .bridge .arrow { font-size: 1.8rem; line-height: 1; }
+  .helps { margin-top: 1.3rem; padding: 1rem 1.3rem; border-radius: 12px; background: var(--ink-2); border: 1px solid var(--line); font-size: 1rem; color: var(--text-lo); line-height: 1.6; }
+  .helps b { color: var(--text-hi); font-weight: 600; }
+
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.8rem; margin-top: 2rem; }
+  .tool { border-top: 1px solid var(--line); padding-top: 0.9rem; }
+  .tool h3 { font-family: var(--serif); font-size: 1.18rem; margin: 0 0 0.3rem; }
+  .tool p { margin: 0; font-size: 0.94rem; color: var(--text-lo); line-height: 1.5; }
+
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; margin-top: 2.2rem; }
+  .stage { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); min-width: 120px; }
+  .stage .n { font-family: var(--mono); font-size: 0.68rem; color: var(--text-lo); letter-spacing: 0.12em; }
+  .stage .l { font-family: var(--serif); font-size: 1.15rem; }
+  .sep { color: var(--text-lo); font-size: 1.3rem; }
+
+  .rail { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.8rem; z-index: 20; }
+  .rail button { width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 1px solid var(--line-2); background: transparent; cursor: pointer; transition: all .2s; }
+  .rail button.active { background: var(--machine); border-color: var(--machine); box-shadow: 0 0 10px var(--machine); }
+  .rail button:focus-visible { outline: 2px solid var(--machine); outline-offset: 3px; }
+  .counter { position: fixed; right: 1.4rem; bottom: 1.4rem; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.1em; color: var(--text-lo); z-index: 20; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 760px) {
+    .cards, .tools { grid-template-columns: 1fr; }
+    .duo { grid-template-columns: 1fr; }
+    .bridge { flex-direction: row; } .bridge .arrow { transform: rotate(90deg); }
+    .rail { display: none; }
+  }
+
+  @media print {
+    html { scroll-snap-type: none; }
+    .slide { min-height: auto; page-break-after: always; break-after: page; border: none; }
+    .rail, .counter, .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide" id="s0">
+    <div class="wrap">
+      <p class="eyebrow">LLMagnet</p>
+      <h1 class="title">LLM<span class="glow">agnet</span></h1>
+      <p class="lede">Engineering discoverability for the next generation of search.</p>
+      <p class="body">A toolkit for a newsroom covering Indian startups. It helps you shape a story so it stays a good read for people, and is clear enough for AI assistants like ChatGPT and Gemini to find, understand, and cite — alongside traditional search.</p>
+      <a class="linkchip" href="https://llmagnet.in" target="_blank" rel="noopener"><span class="dot"></span>llmagnet.in</a>
+    </div>
+    <p class="hint">Scroll / ↓ to advance</p>
+  </section>
+
+  <section class="slide" id="s1">
+    <div class="wrap">
+      <p class="eyebrow">The Idea</p>
+      <h2>Written for readers. Structured for the models that cite them.</h2>
+      <p class="body">Readers increasingly ask AI assistants instead of typing into a search box. When they do, the source the model quotes is the one that gets seen.</p>
+      <p class="body">LLMagnet is built to help a reporter prepare a story for both audiences at once — the person reading it, and the model that may cite it — without treating them as separate jobs.</p>
+    </div>
+  </section>
+
+  <section class="slide" id="s2">
+    <div class="wrap">
+      <p class="eyebrow">How It's Built</p>
+      <h2>Six tools, connected around one draft.</h2>
+      <div class="cards">
+        <div class="card"><p class="k">One draft</p><h3>Shared workspace</h3><p>Your article lives in one place and moves through every tool. It helps you avoid re-pasting your work each time you switch tools.</p></div>
+        <div class="card"><p class="k">Two views</p><h3>The council</h3><p>Each tool shows a reader's view and a model's view of your draft. It helps you improve for AI without losing readability.</p></div>
+        <div class="card"><p class="k">One path</p><h3>A guided flow</h3><p>A simple progress view walks the story from first draft to publish-ready. It helps you see where you are and what's left.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s3">
+    <div class="wrap">
+      <p class="eyebrow">Feature — The Council</p>
+      <h2>Two perspectives on every draft.</h2>
+      <div class="duo">
+        <div class="voice reader"><p class="vhead"><span class="swatch"></span>The Reader</p><ul><li>Clarity and narrative</li><li>Trust and accuracy</li><li>What a person wants to read</li></ul></div>
+        <div class="bridge"><span class="arrow">→</span><span>Suggested action</span></div>
+        <div class="voice machine"><p class="vhead"><span class="swatch"></span>The Machine</p><ul><li>Structure and entities</li><li>Extractable facts</li><li>What a model can parse and cite</li></ul></div>
+      </div>
+      <div class="helps"><b>How it helps:</b> you see both views side by side and get a single suggested edit, so preparing a story for AI and keeping it readable stay part of the same decision.</div>
+    </div>
+  </section>
+
+  <section class="slide" id="s4">
+    <div class="wrap">
+      <p class="eyebrow">The Toolkit</p>
+      <h2>What each tool helps with.</h2>
+      <div class="tools">
+        <div class="tool"><h3>Content Score</h3><p>Helps you see how citable your article reads for an AI assistant.</p></div>
+        <div class="tool"><h3>Semantic Score</h3><p>Helps you check whether the meaning of your story comes across clearly to a model.</p></div>
+        <div class="tool"><h3>Query Optimizer</h3><p>Helps you find the questions your story should answer to be surfaced.</p></div>
+        <div class="tool"><h3>Rewrite</h3><p>Helps you revise for citability while keeping the piece readable.</p></div>
+        <div class="tool"><h3>Trends</h3><p>Helps you find angles and topics worth covering.</p></div>
+        <div class="tool"><h3>Competitor Gap</h3><p>Helps you spot what rival coverage includes that yours doesn't yet.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s5">
+    <div class="wrap">
+      <p class="eyebrow">The Flow</p>
+      <h2>A clear path from draft to published.</h2>
+      <div class="flow">
+        <div class="stage"><span class="n">01</span><span class="l">Discover</span></div><span class="sep">→</span>
+        <div class="stage"><span class="n">02</span><span class="l">Score</span></div><span class="sep">→</span>
+        <div class="stage"><span class="n">03</span><span class="l">Target</span></div><span class="sep">→</span>
+        <div class="stage"><span class="n">04</span><span class="l">Rewrite</span></div><span class="sep">→</span>
+        <div class="stage"><span class="n">05</span><span class="l">Re-score</span></div>
+      </div>
+      <p class="body" style="margin-top:2rem">A shared progress view and a citability score follow the draft through each step. They help you tell whether an edit has made the story easier to find and cite, before you publish.</p>
+    </div>
+  </section>
+
+  <section class="slide" id="s6">
+    <div class="wrap">
+      <p class="eyebrow">In Short</p>
+      <h1 class="title" style="font-size:clamp(2.4rem,7.5vw,5rem)">Discoverable for<br>people and the<br>models they ask.</h1>
+      <p class="body">Built as a Next.js app — one shared draft, a two-voice council over GPT, and a citability view across six connected tools.</p>
+      <a class="linkchip" href="https://llmagnet.in" target="_blank" rel="noopener"><span class="dot"></span>llmagnet.in</a>
+    </div>
+  </section>
+
+</div>
+
+<nav class="rail" id="rail" aria-label="Slide navigation"></nav>
+<div class="counter" id="counter">01 / 07</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var rail = document.getElementById('rail');
+    var counter = document.getElementById('counter');
+    var current = 0;
+
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+      b.addEventListener('click', function () { s.scrollIntoView(); });
+      rail.appendChild(b);
+    });
+    var dots = Array.prototype.slice.call(rail.children);
+
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function setActive(i) {
+      current = i;
+      dots.forEach(function (d, j) { d.classList.toggle('active', j === i); });
+      counter.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    }
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) setActive(slides.indexOf(e.target)); });
+      }, { threshold: 0.6 });
+      slides.forEach(function (s) { io.observe(s); });
+    }
+    setActive(0);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        if (current < slides.length - 1) { e.preventDefault(); slides[current + 1].scrollIntoView(); }
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        if (current > 0) { e.preventDefault(); slides[current - 1].scrollIntoView(); }
+      }
+    });
+  })();
+</script>
+</body>
+</html>

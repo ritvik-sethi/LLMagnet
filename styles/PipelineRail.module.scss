@@ -2,24 +2,24 @@
 
 .rail {
   position: sticky;
-  top: 70px;
+  top: 52px;
   z-index: 900;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 0.6rem 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(5px);
-  border-bottom: 1px solid $border-color;
+  padding: 0.45rem 1rem;
+  background: rgba(18, 18, 18, 0.96);
+  border-bottom: 1px solid $ink;
+  color: #a1a1aa;
 }
 
 .stages {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.2rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -30,9 +30,10 @@
     align-items: center;
 
     &:not(:last-child)::after {
-      content: '→';
-      margin: 0 0.35rem;
-      color: $text-muted;
+      content: '›';
+      margin: 0 0.2rem;
+      color: #52525b;
+      font-family: $mono-stack;
       font-size: 0.85rem;
     }
   }
@@ -41,41 +42,94 @@
 .stageLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   text-decoration: none;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0;
+  border: 1px solid transparent;
+  font-family: $mono-stack;
+  font-size: 0.7rem;
   font-weight: 500;
-  transition: background 0.2s, color 0.2s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+
+  &:hover {
+    color: #fafafa;
+    text-decoration: none;
+  }
 }
 
 .stageIndex {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  font-weight: 700;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 0;
+  border: 1px solid #52525b;
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: $mono-stack;
 }
 
-// Stage states — completed / current / upcoming (design-lens U2).
 .completed .stageLink {
-  color: $success-color;
-  .stageIndex { background: $success-color; color: white; }
+  color: #86efac;
+  .stageIndex {
+    background: #15803d;
+    border-color: #15803d;
+    color: white;
+  }
 }
+
 .current .stageLink {
-  color: $primary-color;
-  background: rgba(37, 99, 235, 0.1);
-  font-weight: 700;
-  .stageIndex { background: linear-gradient(135deg, $primary-color, $secondary-color); color: white; }
+  color: #fafafa;
+  border-color: #fafafa;
+  background: transparent;
+  .stageIndex {
+    background: #fafafa;
+    border-color: #fafafa;
+    color: $ink;
+  }
 }
+
 .upcoming .stageLink {
-  color: $text-muted;
-  .stageIndex { background: $background-light; color: $text-muted; }
-  &:hover { color: $text-primary; }
+  color: #71717a;
+  .stageIndex {
+    background: transparent;
+    color: #71717a;
+  }
+  &:hover {
+    color: #e4e4e7;
+  }
+}
+
+.railEnd {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.reset {
+  border: 1px solid #52525b !important;
+  background: transparent !important;
+  color: #a1a1aa !important;
+  font-family: $mono-stack !important;
+  font-size: 0.65rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 0.28rem 0.5rem !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+
+  &:hover {
+    color: #fafafa !important;
+    border-color: #fafafa !important;
+    background: transparent !important;
+  }
 }
 
 .score {
@@ -84,31 +138,44 @@
   align-items: flex-end;
   line-height: 1.1;
   white-space: nowrap;
-  transition: transform 0.3s ease;
 }
+
 .scoreLabel {
-  font-size: 0.65rem;
+  font-family: $mono-stack;
+  font-size: 0.58rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: $text-muted;
+  letter-spacing: 0.14em;
+  color: #71717a;
 }
+
 .scoreValue {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: $text-primary;
+  font-family: $mono-stack;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fafafa;
+  font-variant-numeric: tabular-nums;
 }
+
 .bump {
-  transform: scale(1.18);
-  .scoreValue { color: $primary-color; }
+  .scoreValue {
+    color: #5eead4;
+  }
 }
 
 @media (max-width: 768px) {
   .rail {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
-  .stages { gap: 0.2rem; font-size: 0.8rem; }
-  .stageLabel { display: none; } // compact to numbered dots on narrow screens
-  .score { align-items: flex-start; }
+  .stageLabel {
+    display: none;
+  }
+  .railEnd {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .score {
+    align-items: flex-start;
+  }
 }
