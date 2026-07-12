@@ -140,7 +140,7 @@ HARD SEPARATION
 - reconciledAction: ONE next edit — name company + number/source + where to insert it.
 
 Each voice shape:
-{ "take": 2–4 precise sentences about THIS article only, "points": 3–5 bullets each with a draft quote + fix, "suggestions": 2–4 concrete edits naming the paragraph/claim }`;
+{ "take": "string", "points": ["string with draft quote + fix"], "suggestions": ["string naming paragraph/claim"] }`;
 
 interface ToolProfile {
   deskBrief: string;
@@ -319,11 +319,47 @@ function emptyVoice(): CouncilVoice {
   return { take: '', points: [], suggestions: [] };
 }
 
+/** Models sometimes return { quote, fix } instead of strings — flatten for React. */
+export function coerceText(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    return value.map(coerceText).filter(Boolean).join(' · ');
+  }
+  if (typeof value === 'object') {
+    const o = value as Record<string, unknown>;
+    const quote = coerceText(o.quote ?? o.Quote ?? o.text ?? o.point ?? o.claim);
+    const issue = coerceText(o.issue ?? o.Issue ?? o.missing ?? o.problem);
+    const fix = coerceText(o.fix ?? o.Fix ?? o.action ?? o.suggestion);
+    const parts = [
+      quote && (quote.startsWith('Quote:') || quote.startsWith('«') ? quote : `Quote: «${quote}»`),
+      issue && (issue.startsWith('Issue:') ? issue : `Issue: ${issue}`),
+      fix && (fix.startsWith('Fix:') ? fix : `Fix: ${fix}`),
+    ].filter(Boolean);
+    if (parts.length) return parts.join(' · ');
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
+function coerceTextList(value: unknown, limit = 8): string[] {
+  if (!Array.isArray(value)) {
+    const one = coerceText(value);
+    return one ? [one] : [];
+  }
+  return value.map(coerceText).filter((s) => s.trim()).slice(0, limit);
+}
+
 function normalizeVoice(raw: Partial<CouncilVoice> | undefined): CouncilVoice {
   return {
-    take: raw?.take ?? '',
-    points: raw?.points ?? [],
-    suggestions: raw?.suggestions ?? [],
+    take: coerceText(raw?.take),
+    points: coerceTextList(raw?.points, 6),
+    suggestions: coerceTextList(raw?.suggestions, 6),
   };
 }
 
@@ -454,15 +490,15 @@ Return ONLY valid JSON:
   const result: CouncilResult = {
     humanEdge,
     seoEditor,
-    reconciledAction: (raw.reconciledAction as string) || '',
+    reconciledAction: coerceText(raw.reconciledAction),
   };
 
   const comparison = raw.comparison as CouncilResult['comparison'] | undefined;
   if (comparison && typeof comparison === 'object') {
     result.comparison = {
-      readerLens: comparison.readerLens || '',
-      aiLens: comparison.aiLens || '',
-      whereTheyClash: comparison.whereTheyClash || '',
+      readerLens: coerceText(comparison.readerLens),
+      aiLens: coerceText(comparison.aiLens),
+      whereTheyClash: coerceText(comparison.whereTheyClash),
     };
   }
 
@@ -474,40 +510,42 @@ Return ONLY valid JSON:
     result.score = clampCiteScore(s);
     const breakdown = Array.isArray(raw.breakdown) ? (raw.breakdown as MatrixAxisScore[]) : [];
     result.breakdown = breakdown.map((b) => ({
-      id: b.id,
-      label: b.label,
+      id: coerceText((b as { id?: unknown }).id) || 'axis',
+      label: coerceText((b as { label?: unknown }).label) || 'Axis',
       max: Number(b.max) || 0,
       score: Number(b.score) || 0,
-      note: b.note || '',
+      note: coerceText((b as { note?: unknown }).note),
     }));
 
-    const ledger = raw.citeLedger as CiteLedger | undefined;
+    const ledger = raw.citeLedger as Record<string, unknown> | undefined;
     if (ledger && typeof ledger === 'object') {
+      const entities = Array.isArray(ledger.entities) ? ledger.entities : [];
+      const claimAudits = Array.isArray(ledger.claimAudits) ? ledger.claimAudits : [];
       result.citeLedger = {
-        entities: Array.isArray(ledger.entities)
-          ? ledger.entities
-              .filter((e) => e && typeof e.name === 'string')
-              .slice(0, 8)
-              .map((e) => ({
-                name: e.name || '',
-                role: e.role || '',
-                citableFact: e.citableFact || '',
-              }))
-          : [],
-        claimAudits: Array.isArray(ledger.claimAudits)
-          ? ledger.claimAudits
-              .filter((c) => c && typeof c.claim === 'string')
-              .slice(0, 7)
-              .map((c) => ({
-                claim: c.claim || '',
-                wouldCite: Boolean(c.wouldCite),
-                missing: c.missing || '',
-                fix: c.fix || '',
-              }))
-          : [],
-        deskMoves: Array.isArray(ledger.deskMoves)
-          ? ledger.deskMoves.filter((d) => typeof d === 'string' && d.trim()).slice(0, 6)
-          : [],
+        entities: entities
+          .slice(0, 8)
+          .map((e) => {
+            const row = (e || {}) as Record<string, unknown>;
+            return {
+              name: coerceText(row.name),
+              role: coerceText(row.role),
+              citableFact: coerceText(row.citableFact ?? row.fact),
+            };
+          })
+          .filter((e) => e.name),
+        claimAudits: claimAudits
+          .slice(0, 7)
+          .map((c) => {
+            const row = (c || {}) as Record<string, unknown>;
+            return {
+              claim: coerceText(row.claim),
+              wouldCite: Boolean(row.wouldCite),
+              missing: coerceText(row.missing),
+              fix: coerceText(row.fix),
+            };
+          })
+          .filter((c) => c.claim),
+        deskMoves: coerceTextList(ledger.deskMoves, 6),
       };
     }
   }

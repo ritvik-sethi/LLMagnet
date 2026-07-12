@@ -115,6 +115,21 @@ interface Props {
   loadingFlow?: LoadingFlowId;
 }
 
+function asDisplayText(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map(asDisplayText).filter(Boolean).join(' · ');
+  if (typeof value === 'object') {
+    const o = value as Record<string, unknown>;
+    const quote = asDisplayText(o.quote ?? o.text ?? o.point ?? o.claim);
+    const issue = asDisplayText(o.issue ?? o.missing);
+    const fix = asDisplayText(o.fix ?? o.suggestion);
+    return [quote && `«${quote}»`, issue, fix].filter(Boolean).join(' · ');
+  }
+  return '';
+}
+
 function VoicePanel({
   variant,
   title,
@@ -126,7 +141,8 @@ function VoicePanel({
   subtitle: string;
   voice: CouncilVoice;
 }) {
-  const suggestions = voice.suggestions ?? [];
+  const suggestions = (voice.suggestions ?? []).map(asDisplayText).filter(Boolean);
+  const points = (voice.points ?? []).map(asDisplayText).filter(Boolean);
   return (
     <section className={`${styles.panel} ${variant === 'human' ? styles.human : styles.seo}`}>
       <header className={styles.panelHead}>
@@ -136,10 +152,10 @@ function VoicePanel({
           <span className={styles.panelSub}>{subtitle}</span>
         </div>
       </header>
-      <p className={styles.take}>{voice.take}</p>
-      {voice.points?.length > 0 && (
+      <p className={styles.take}>{asDisplayText(voice.take)}</p>
+      {points.length > 0 && (
         <ul>
-          {voice.points.map((p, i) => (
+          {points.map((p, i) => (
             <li key={i}>{p}</li>
           ))}
         </ul>
@@ -267,7 +283,7 @@ export default function CouncilVerdict({
                       {tone === 'weak' ? 'Needs work' : tone === 'mid' ? 'Solid' : 'Strong'}
                     </span>
                   </div>
-                  {axis.note && <p className={styles.matrixNote}>{axis.note}</p>}
+                  {axis.note && <p className={styles.matrixNote}>{asDisplayText(axis.note)}</p>}
                 </motion.article>
               );
             })}
@@ -290,10 +306,10 @@ export default function CouncilVerdict({
                 <h4>Entities</h4>
                 <ul className={styles.ledgerList}>
                   {result.citeLedger.entities!.map((e, i) => (
-                    <li key={`${e.name}-${i}`}>
-                      <strong>{e.name}</strong>
-                      <span className={styles.meta}>{e.role}</span>
-                      <p>{e.citableFact}</p>
+                    <li key={`${asDisplayText(e.name)}-${i}`}>
+                      <strong>{asDisplayText(e.name)}</strong>
+                      <span className={styles.meta}>{asDisplayText(e.role)}</span>
+                      <p>{asDisplayText(e.citableFact)}</p>
                     </li>
                   ))}
                 </ul>
@@ -314,16 +330,16 @@ export default function CouncilVerdict({
                         >
                           {c.wouldCite ? 'would cite' : 'refuse'}
                         </span>{' '}
-                        {c.claim}
+                        {asDisplayText(c.claim)}
                       </strong>
-                      {c.missing && (
+                      {asDisplayText(c.missing) && (
                         <p>
-                          <em>Missing:</em> {c.missing}
+                          <em>Missing:</em> {asDisplayText(c.missing)}
                         </p>
                       )}
-                      {c.fix && (
+                      {asDisplayText(c.fix) && (
                         <p>
-                          <em>Fix:</em> {c.fix}
+                          <em>Fix:</em> {asDisplayText(c.fix)}
                         </p>
                       )}
                     </li>
@@ -337,7 +353,7 @@ export default function CouncilVerdict({
                 <h4>Desk moves</h4>
                 <ol className={styles.deskMoves}>
                   {result.citeLedger.deskMoves!.map((m, i) => (
-                    <li key={i}>{m}</li>
+                    <li key={i}>{asDisplayText(m)}</li>
                   ))}
                 </ol>
               </div>
@@ -354,15 +370,16 @@ export default function CouncilVerdict({
           <div className={styles.comparison}>
             <div className={styles.comparisonCol}>
               <span className={styles.comparisonTag}>Human reader</span>
-              <p>{result.comparison.readerLens}</p>
+              <p>{asDisplayText(result.comparison.readerLens)}</p>
             </div>
             <div className={styles.comparisonCol}>
               <span className={`${styles.comparisonTag} ${styles.aiTag}`}>AI / citation</span>
-              <p>{result.comparison.aiLens}</p>
+              <p>{asDisplayText(result.comparison.aiLens)}</p>
             </div>
-            {result.comparison.whereTheyClash && (
+            {asDisplayText(result.comparison.whereTheyClash) && (
               <div className={styles.clash}>
-                <strong>Where they clash:</strong> {result.comparison.whereTheyClash}
+                <strong>Where they clash:</strong>{' '}
+                {asDisplayText(result.comparison.whereTheyClash)}
               </div>
             )}
           </div>
@@ -440,7 +457,7 @@ export default function CouncilVerdict({
         <div className={styles.reconciled}>
           <FaArrowRight aria-hidden />
           <span>
-            <strong>Do this next:</strong> {result.reconciledAction}
+            <strong>Do this next:</strong> {asDisplayText(result.reconciledAction)}
           </span>
         </div>
       )}
