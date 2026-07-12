@@ -1,0 +1,114 @@
+@import 'variables';
+
+.rail {
+  position: sticky;
+  top: 70px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  border-bottom: 1px solid $border-color;
+}
+
+.stages {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+
+  li {
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child)::after {
+      content: '→';
+      margin: 0 0.35rem;
+      color: $text-muted;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.stageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.stageIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+// Stage states — completed / current / upcoming (design-lens U2).
+.completed .stageLink {
+  color: $success-color;
+  .stageIndex { background: $success-color; color: white; }
+}
+.current .stageLink {
+  color: $primary-color;
+  background: rgba(37, 99, 235, 0.1);
+  font-weight: 700;
+  .stageIndex { background: linear-gradient(135deg, $primary-color, $secondary-color); color: white; }
+}
+.upcoming .stageLink {
+  color: $text-muted;
+  .stageIndex { background: $background-light; color: $text-muted; }
+  &:hover { color: $text-primary; }
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: transform 0.3s ease;
+}
+.scoreLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: $text-muted;
+}
+.scoreValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+.bump {
+  transform: scale(1.18);
+  .scoreValue { color: $primary-color; }
+}
+
+@media (max-width: 768px) {
+  .rail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .stages { gap: 0.2rem; font-size: 0.8rem; }
+  .stageLabel { display: none; } // compact to numbered dots on narrow screens
+  .score { align-items: flex-start; }
+}
