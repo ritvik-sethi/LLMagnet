@@ -3,6 +3,11 @@ import { searchTopic, type SearchHit } from '../_shared/webSearch';
 import { scrapeMany } from '../_shared/scrape';
 import { extractArticleClaims, runCouncil } from '../_shared/council';
 import { classifyEditorialContent } from '../_shared/articleGate';
+import {
+  formatPipelineContext,
+  type AdvicePayload,
+  type LiveCheckPayload,
+} from '../_shared/pipelineContext';
 
 export const maxDuration = 120;
 
@@ -15,7 +20,7 @@ function formatHits(hits: SearchHit[], limit = 4): string {
 
 export async function POST(request: Request) {
   try {
-    const { heading, content } = await request.json();
+    const { heading, content, score, liveCheck, advice } = await request.json();
     const article = (content as string) || '';
     const title = (heading as string) || '';
 
@@ -96,13 +101,22 @@ export async function POST(request: Request) {
           .join('\n\n')
       : '(No full pages scraped — use claim search snippets only.)';
 
-    // 4) Full Indian business-desk polish (facts + judgment woven in, no labelled opinions)
+    const prior = formatPipelineContext({
+      score: typeof score === 'number' ? score : null,
+      liveCheck: liveCheck as LiveCheckPayload | null,
+      advice: advice as AdvicePayload | null,
+    });
+
+    // 4) Full Indian business article polish (facts + judgment woven in, no labelled opinions)
     const result = await runCouncil({
       tool: 'rewrite',
       content: `HEADLINE: ${title}
 
 ORIGINAL ARTICLE:
 ${article}
+
+=== PRIOR PIPELINE CONTEXT (MUST carry into this rewrite) ===
+${prior}
 
 === PER-CLAIM WEB RESEARCH (verify & densify EACH of these — minimum 5) ===
 ${claimBlocks}
@@ -112,6 +126,7 @@ ${scrapedBlock}
 
 REQUIREMENTS REMINDER:
 - You are a senior Indian business newsroom editor. Edit substantially — densify, reframe, add market context.
+- Honour prior Live check + Advice: fold those edits into the rewrite.
 - Densify at least 5 claims from the research blocks above.
 - Be opinionated and carefully speculative in the prose itself; never label anything as "opinion".
 - Never invent facts not in the draft or the research. Use [NEED: …] when unknown.

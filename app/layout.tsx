@@ -1,22 +1,23 @@
 'use client';
 
-import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
+import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import NavBar from './NavBar';
 import PipelineRail from '@/components/PipelineRail';
+import ArticleContextBar from '@/components/ArticleContextBar';
 
-const plexSans = IBM_Plex_Sans({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-plex-sans',
+  variable: '--font-space-grotesk',
   display: 'swap',
 });
 
-const plexMono = IBM_Plex_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
-  variable: '--font-plex-mono',
+  variable: '--font-jetbrains',
   display: 'swap',
 });
 
@@ -27,16 +28,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>LLMagnet — write once, get cited</title>
         <meta
           name="description"
-          content="A newsroom desk for citeable stories: score your draft, check Google and X, polish with tracked changes, and see what rivals covered."
+          content="Article editing for citeable stories: score your draft, check Google and X, polish with researched rewrites, and see what rivals covered."
         />
         <meta name="color-scheme" content="light" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
       </head>
-      <body className={`${plexSans.variable} ${plexMono.variable} ${plexSans.className}`}>
+      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceGrotesk.className}`}>
         <Providers>
           <NavBar />
           <div className="app-shell">
             <PipelineRail />
+            <ArticleContextBar />
             {children}
           </div>
         </Providers>

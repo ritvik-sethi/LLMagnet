@@ -175,7 +175,7 @@ export function gateNewsArticle(heading: string, content: string): ArticleGateRe
   if (!body) {
     return invalid(
       'EMPTY',
-      'paste a news article draft or a published article URL. This desk only works on editorial journalism.'
+      'paste a news article draft or a published article URL. This tool only works on editorial journalism.'
     );
   }
 
@@ -256,7 +256,7 @@ export type ContentKind =
 
 /**
  * Intelligent second pass — OpenAI classifies whether the paste is a real
- * editorial news article. Used by scoring / desk routes so borderline dumps
+ * editorial news article. Used by scoring / edit routes so borderline dumps
  * (Wikipedia-in-a-LinkedIn-post, soft PR fluff, etc.) still get rejected.
  */
 export async function classifyEditorialContent(

@@ -3,13 +3,18 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export type StageId = 'paste' | 'score' | 'live' | 'suggest' | 'rewrite' | 'competitors';
 export type StageStatus = 'upcoming' | 'current' | 'completed';
 
-export const STAGES: { id: StageId; label: string; path: string }[] = [
-  { id: 'paste', label: 'Draft', path: '/draft' },
-  { id: 'score', label: 'Score', path: '/content-seo-score' },
-  { id: 'live', label: 'Live check', path: '/live-signals' },
-  { id: 'suggest', label: 'Advice', path: '/desk-suggest' },
-  { id: 'rewrite', label: 'Polish', path: '/rewrite-for-llm' },
-  { id: 'competitors', label: 'Rivals', path: '/competitor-gap-analysis' },
+export const STAGES: { id: StageId; label: string; headline: string; path: string }[] = [
+  { id: 'paste', label: 'Draft', headline: 'Open the article', path: '/draft' },
+  { id: 'score', label: 'Score', headline: 'Score citeability', path: '/content-seo-score' },
+  { id: 'live', label: 'Live check', headline: 'Check the news cycle', path: '/live-signals' },
+  { id: 'suggest', label: 'Advice', headline: 'Get edit advice', path: '/desk-suggest' },
+  { id: 'rewrite', label: 'Polish', headline: 'Polish the article', path: '/rewrite-for-llm' },
+  {
+    id: 'competitors',
+    label: 'Rivals',
+    headline: 'Compare rival coverage',
+    path: '/competitor-gap-analysis',
+  },
 ];
 
 export const STAGE_ORDER: StageId[] = STAGES.map((s) => s.id);
@@ -33,15 +38,38 @@ export interface LiveCheckSnapshot {
   capturedAt?: string;
 }
 
+/** Snapshot from Advice — Polish/Rivals must honour these edits. */
+export interface AdviceSnapshot {
+  rewritePitch?: string;
+  shouldRewrite?: boolean;
+  humanSuggestions?: string[];
+  machineSuggestions?: string[];
+  reconciledAction?: string;
+  comparison?: {
+    readerLens?: string;
+    aiLens?: string;
+    whereTheyClash?: string;
+  };
+  capturedAt?: string;
+}
+
 export interface EditorialDraftState {
   heading: string;
   body: string;
   /** Optional source URL if draft was imported from the web. */
   sourceUrl: string;
+  /** Immutable-ish origin title locked when the flow starts. */
+  originTitle: string;
+  /** Immutable-ish origin URL locked when the flow starts. */
+  originUrl: string;
+  /** When the working article was first locked into the pipeline. */
+  startedAt: string;
   /** Snapshot of body before last rewrite apply — used for diffs. */
   previousBody: string;
-  /** Latest Live check SOCIAL + questions — used by Advice. */
+  /** Snapshot from Live check — used by Advice and later steps. */
   liveCheck: LiveCheckSnapshot | null;
+  /** Snapshot from Advice — used by Polish and Rivals. */
+  advice: AdviceSnapshot | null;
   contentScore: number | null;
   semanticScore: number | null;
   citabilityScore: number | null;
@@ -61,15 +89,19 @@ const initialState: EditorialDraftState = {
   heading: '',
   body: '',
   sourceUrl: '',
+  originTitle: '',
+  originUrl: '',
+  startedAt: '',
   previousBody: '',
   liveCheck: null,
+  advice: null,
   contentScore: null,
   semanticScore: null,
   citabilityScore: null,
   stageStatus: { ...initialStageStatus },
 };
 
-const STORAGE_KEY = 'llmagnet.editorialDraft.v4';
+const STORAGE_KEY = 'llmagnet.editorialDraft.v9';
 
 function aggregate(content: number | null, semantic: number | null): number | null {
   const parts = [content, semantic].filter((n): n is number => typeof n === 'number');
@@ -115,8 +147,23 @@ const editorialDraftSlice = createSlice({
     setSourceUrl: (state, action: PayloadAction<string>) => {
       state.sourceUrl = action.payload;
     },
+    /** Lock the original title/link once when the pipeline starts (does not overwrite). */
+    lockStartedFrom: (state) => {
+      if (!state.startedAt) {
+        state.startedAt = new Date().toISOString();
+      }
+      if (!state.originTitle.trim() && state.heading.trim()) {
+        state.originTitle = state.heading.trim();
+      }
+      if (!state.originUrl.trim() && state.sourceUrl.trim()) {
+        state.originUrl = state.sourceUrl.trim();
+      }
+    },
     setLiveCheck: (state, action: PayloadAction<LiveCheckSnapshot | null>) => {
       state.liveCheck = action.payload;
+    },
+    setAdvice: (state, action: PayloadAction<AdviceSnapshot | null>) => {
+      state.advice = action.payload;
     },
     applyRewrittenBody: (state, action: PayloadAction<string>) => {
       state.previousBody = state.body;
@@ -167,8 +214,23 @@ const editorialDraftSlice = createSlice({
       return {
         ...state,
         ...incoming,
+        sourceUrl: incoming.sourceUrl ?? state.sourceUrl ?? '',
+        originTitle:
+          incoming.originTitle ||
+          incoming.heading ||
+          state.originTitle ||
+          state.heading ||
+          '',
+        originUrl:
+          incoming.originUrl ||
+          incoming.sourceUrl ||
+          state.originUrl ||
+          state.sourceUrl ||
+          '',
+        startedAt: incoming.startedAt || state.startedAt || '',
         previousBody: incoming.previousBody ?? state.previousBody ?? '',
         liveCheck: incoming.liveCheck ?? state.liveCheck ?? null,
+        advice: incoming.advice ?? state.advice ?? null,
         stageStatus,
       };
     },
@@ -179,7 +241,9 @@ export const {
   setDraftHeading,
   setDraftBody,
   setSourceUrl,
+  lockStartedFrom,
   setLiveCheck,
+  setAdvice,
   applyRewrittenBody,
   setContentScore,
   setSemanticScore,
@@ -194,6 +258,11 @@ export function loadPersistedDraft(): Partial<EditorialDraftState> | null {
   try {
     const raw =
       window.localStorage.getItem(STORAGE_KEY) ||
+      window.localStorage.getItem('llmagnet.editorialDraft.v8') ||
+      window.localStorage.getItem('llmagnet.editorialDraft.v7') ||
+      window.localStorage.getItem('llmagnet.editorialDraft.v6') ||
+      window.localStorage.getItem('llmagnet.editorialDraft.v5') ||
+      window.localStorage.getItem('llmagnet.editorialDraft.v4') ||
       window.localStorage.getItem('llmagnet.editorialDraft.v3');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -219,6 +288,11 @@ export function clearPersistedDraft(): void {
     window.localStorage.removeItem('llmagnet.editorialDraft');
     window.localStorage.removeItem('llmagnet.editorialDraft.v2');
     window.localStorage.removeItem('llmagnet.editorialDraft.v3');
+    window.localStorage.removeItem('llmagnet.editorialDraft.v4');
+    window.localStorage.removeItem('llmagnet.editorialDraft.v5');
+    window.localStorage.removeItem('llmagnet.editorialDraft.v6');
+    window.localStorage.removeItem('llmagnet.editorialDraft.v7');
+    window.localStorage.removeItem('llmagnet.editorialDraft.v8');
   } catch {
     /* non-fatal */
   }

@@ -10,6 +10,7 @@ import {
   setDraftBody,
   setCurrentStage,
   markStageComplete,
+  lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
 
@@ -46,6 +47,9 @@ export default function CompetitorGap() {
   const heading = useSelector((s: RootState) => s.editorialDraft.heading);
   const body = useSelector((s: RootState) => s.editorialDraft.body);
   const sourceUrl = useSelector((s: RootState) => s.editorialDraft.sourceUrl);
+  const score = useSelector((s: RootState) => s.editorialDraft.citabilityScore);
+  const liveCheck = useSelector((s: RootState) => s.editorialDraft.liveCheck);
+  const advice = useSelector((s: RootState) => s.editorialDraft.advice);
 
   const [extraUrls, setExtraUrls] = useState('');
   const [status, setStatus] = useState<CouncilStatus>('idle');
@@ -57,6 +61,7 @@ export default function CompetitorGap() {
   }, [dispatch]);
 
   const run = async () => {
+    dispatch(lockStartedFrom());
     setStatus('loading');
     setPhase('Reverse-engineering Google & LLM searches…');
     const t1 = setTimeout(() => setPhase('Searching rival coverage (excluding your source site)…'), 4000);
@@ -75,6 +80,9 @@ export default function CompetitorGap() {
           content: body,
           competitorUrls,
           sourceUrl,
+          score,
+          liveCheck,
+          advice,
         }),
       });
       if (!res.ok) throw new Error('failed');
@@ -93,9 +101,9 @@ export default function CompetitorGap() {
 
   return (
     <main className="desk-page">
-      <p className="desk-kicker">Step 6 of 6 · What did rivals cover?</p>
+      <p className="desk-kicker">Step 6 of 6 · Compare rival coverage</p>
       <h1 className="desk-title">
-        <FaSearch /> See what competitors already wrote
+        <FaSearch /> Compare rival coverage
       </h1>
       <p className="desk-lede">
         We reverse-engineer your piece into Google and LLM-style searches, find coverage from other
@@ -219,14 +227,15 @@ export default function CompetitorGap() {
           status={status}
           result={result}
           onRetry={run}
+          loadingFlow="competitors"
           idleHint="Reverse-engineer searches, read other outlets, then see how your draft holds up."
         />
       </div>
 
       {status === 'success' && (
         <p style={{ marginTop: '1.25rem', color: '#15803d', fontWeight: 600 }}>
-          You’re at the end of the desk. Fold any high-priority gaps back into your draft and score
-          again if you want another pass.
+          You’re at the end of the edit flow. Fold any high-priority gaps back into your draft and
+          score again if you want another pass.
         </p>
       )}
     </main>

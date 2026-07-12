@@ -10,13 +10,15 @@ import {
   FaUsers,
   FaArrowRight,
 } from 'react-icons/fa';
+import ComparisonTable from '@/components/ComparisonTable';
+import FaqAccordion from '@/components/FaqAccordion';
 
 export default function Home() {
   const features = [
     {
-      title: 'Bring in your story',
+      title: 'Bring in your article',
       description:
-        'Paste the piece you’re working on, or drop a published URL. One draft travels with you through every desk step.',
+        'Paste the piece you’re editing, or drop a published URL. One draft stays with you through every editing step.',
       path: '/draft',
       icon: <FaPenFancy className={styles.icon} />,
       wow: 'No more copy-paste between six tabs.',
@@ -24,7 +26,7 @@ export default function Home() {
     {
       title: 'See how citeable it is',
       description:
-        'A clear score for how likely ChatGPT, Gemini, or Claude is to quote you — plus why, in plain English.',
+        'A clear score for how likely answer engines are to quote you — plus why, in plain English.',
       path: '/content-seo-score',
       icon: <FaChartLine className={styles.icon} />,
       wow: 'Two editors argue: human reader vs AI discoverability.',
@@ -38,20 +40,20 @@ export default function Home() {
       wow: 'Every source shows the site it came from.',
     },
     {
-      title: 'Get honest desk advice',
+      title: 'Get concrete edit advice',
       description:
-        'Concrete next moves before you touch the text — then a clear ask: ready to polish without losing your voice?',
+        'Clear next moves before you touch the text — then a simple ask: ready to polish without losing your voice?',
       path: '/desk-suggest',
       icon: <FaBrain className={styles.icon} />,
       wow: 'Advice ranked by impact, not jargon.',
     },
     {
-      title: 'Polish with tracked changes',
+      title: 'Polish the article',
       description:
-        'We densify facts from the web, keep your tone, and show every edit like a markup pass — hover to see why.',
+        'We densify facts from the web, keep your tone, and return a fuller rewrite plus a plain list of what was added.',
       path: '/rewrite-for-llm',
       icon: <FaSearch className={styles.icon} />,
-      wow: 'Green added · amber edited · red cut — with reasons.',
+      wow: 'Clean polished copy · bullet list of what changed.',
     },
     {
       title: 'See what rivals covered',
@@ -67,7 +69,7 @@ export default function Home() {
     {
       number: 1,
       title: 'Open with your draft',
-      description: 'Paste or import a URL. That story becomes the single working copy for the whole flow.',
+      description: 'Paste or import a URL. That article becomes the single working copy for the whole flow.',
     },
     {
       number: 2,
@@ -77,7 +79,7 @@ export default function Home() {
     {
       number: 3,
       title: 'Polish, then close the gaps',
-      description: 'Accept tracked changes, then see what rival coverage still has on you — and fix it.',
+      description: 'Accept the rewrite, then see what rival coverage still has on you — and fix it.',
     },
   ];
 
@@ -85,30 +87,31 @@ export default function Home() {
     <div>
       <section className={styles.hero}>
         <div className={styles.heroContainer}>
-          <img src="/logo.svg" alt="LLMagnet" className={styles.heroLogo} />
-          <p className={styles.heroEyebrow}>For newsrooms covering startups &amp; markets</p>
+          <p className={styles.heroBrand}>LLMagnet</p>
+          <p className={styles.heroEyebrow}>Article editing for LLM citation</p>
           <h1 className={styles.title}>
-            Write once. Get cited by readers — and by AI.
+            If AI answers the question,
+            <br />
+            <span className={styles.titleAccent}>make it quote you.</span>
           </h1>
-          <h2 className={styles.subHeading}>
-            LLMagnet is your desk companion: score how citeable your story is, check what’s live on
-            Google and X, polish facts without killing your voice, and see what competitors already
-            covered.
-          </h2>
           <p className={styles.subtitle}>
-            Built for reporters and editors who don’t have time for SEO theatre — just a clearer path
-            from draft to a piece machines actually quote.
+            Score citeability. Pressure-test the news cycle. Edit for machines without killing the story.
           </p>
-          <Link href="/draft" className={styles.heroCta}>
-            Start with your draft <FaArrowRight />
-          </Link>
+          <div className={styles.heroActions}>
+            <Link href="/draft" className={styles.heroCta}>
+              Start editing <FaArrowRight />
+            </Link>
+            <Link href="/content-seo-score" className={styles.heroGhost}>
+              Jump to score
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className={styles.wowStrip}>
         <div className={styles.wowStripInner}>
           <div>
-            <strong>Two desks in every step</strong>
+            <strong>Two editors in every step</strong>
             <span>The Human Edge and the SEO Specialist Editor — side by side, always.</span>
           </div>
           <div>
@@ -116,8 +119,8 @@ export default function Home() {
             <span>Score → live check → advice → polish → rivals. No re-pasting.</span>
           </div>
           <div>
-            <strong>Edits you can trust</strong>
-            <span>Tracked changes with hover reasons — and sources named by site.</span>
+            <strong>Context carries forward</strong>
+            <span>Score, live signals, and advice feed the next prompt — not a fresh start each time.</span>
           </div>
         </div>
       </section>
@@ -126,7 +129,7 @@ export default function Home() {
         <div className={styles.featuresContainer}>
           <header className={styles.sectionHead}>
             <p className={styles.sectionKicker}>What you’ll notice</p>
-            <h2 className={styles.sectionTitle}>Moments that make the desk feel unfairly good</h2>
+            <h2 className={styles.sectionTitle}>Editing moves that make citeability feel unfairly clear</h2>
           </header>
           <div className={styles.featuresGrid}>
             {features.map((feature) => (
@@ -144,7 +147,7 @@ export default function Home() {
       <section className={styles.howItWorks}>
         <div className={styles.howItWorksContainer}>
           <header className={styles.sectionHead}>
-            <p className={styles.sectionKicker}>How the desk works</p>
+            <p className={styles.sectionKicker}>How editing works here</p>
             <h2 className={styles.sectionTitle}>Three beats. You’re done before the next stand-up.</h2>
           </header>
           <div className={styles.steps}>
@@ -158,9 +161,29 @@ export default function Home() {
           </div>
           <div className={styles.howCtaWrap}>
             <Link href="/draft" className={styles.heroCta}>
-              Open the desk <FaArrowRight />
+              Start with your draft <FaArrowRight />
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className={styles.marketingBlock}>
+        <div className={styles.marketingInner}>
+          <header className={styles.sectionHead}>
+            <p className={styles.sectionKicker}>Why not just ChatGPT?</p>
+            <h2 className={styles.sectionTitle}>LLMagnet vs OpenAI vs Claude</h2>
+          </header>
+          <ComparisonTable />
+        </div>
+      </section>
+
+      <section className={styles.marketingBlockAlt}>
+        <div className={styles.marketingInner}>
+          <header className={styles.sectionHead}>
+            <p className={styles.sectionKicker}>FAQ</p>
+            <h2 className={styles.sectionTitle}>Questions editors ask first</h2>
+          </header>
+          <FaqAccordion />
         </div>
       </section>
     </div>

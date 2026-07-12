@@ -7,10 +7,13 @@ import { FaSatelliteDish, FaRocket, FaArrowRight, FaExternalLinkAlt } from 'reac
 import CouncilVerdict, { CouncilResultView, CouncilStatus } from '@/components/CouncilVerdict';
 import WowNote from '@/components/WowNote';
 import {
+  setDraftHeading,
+  setDraftBody,
   setCurrentStage,
   markStageComplete,
   stagePath,
   setLiveCheck,
+  lockStartedFrom,
 } from '@/store/slices/editorialDraftSlice';
 import type { RootState } from '@/store/store';
 
@@ -75,6 +78,7 @@ export default function LiveSignalsPage() {
   }, [dispatch]);
 
   const run = async () => {
+    dispatch(lockStartedFrom());
     setStatus('loading');
     try {
       const res = await fetch('/api/live-signals', {
@@ -113,20 +117,37 @@ export default function LiveSignalsPage() {
 
   return (
     <main className="desk-page">
-      <p className="desk-kicker">Step 3 of 6 · Reader questions &amp; social pulse</p>
+      <p className="desk-kicker">Step 3 of 6 · Check the news cycle</p>
       <h1 className="desk-title">
-        <FaSatelliteDish /> Questions, X, Reddit &amp; fresh news
+        <FaSatelliteDish /> Check the news cycle
       </h1>
       <p className="desk-lede">
         We rephrase your title, then pull new X posts, Reddit threads, and other-outlet news —
         each tagged SOCIAL with a short summary so you can read sentiment fast. Plus the questions
-        people Google around this topic.
+        people Google around this topic. Your headline, link, and body stay with you from Draft.
       </p>
 
       <WowNote label="Wow">
         <strong>SOCIAL</strong> cards = X + Reddit + fresh news with editor summaries — not a dump
         of same-site title matches.
       </WowNote>
+
+      <label className="desk-label">Working headline</label>
+      <input
+        className="desk-field"
+        type="text"
+        value={heading}
+        onChange={(e) => dispatch(setDraftHeading(e.target.value))}
+        placeholder="Article headline…"
+      />
+      <label className="desk-label">Article body</label>
+      <textarea
+        className="desk-field"
+        value={body}
+        onChange={(e) => dispatch(setDraftBody(e.target.value))}
+        placeholder="Your working draft…"
+        rows={8}
+      />
 
       <button
         className="ce-primary-btn"
@@ -146,7 +167,7 @@ export default function LiveSignalsPage() {
             border: '1px solid #bfdbfe',
           }}
         >
-          <strong>Desk note:</strong> {result.liveVerdict}
+          <strong>Editor note:</strong> {result.liveVerdict}
           {result.signals?.providerNote && (
             <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.35rem' }}>
               Via {result.signals.providerNote}
@@ -338,6 +359,7 @@ export default function LiveSignalsPage() {
           status={status}
           result={result}
           onRetry={run}
+          loadingFlow="live"
           idleHint="Rephrase your title, then scan SOCIAL (X, Reddit, news) plus reader questions."
         />
       </div>

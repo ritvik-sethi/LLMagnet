@@ -43,7 +43,7 @@ export default function SemanticScore() {
       if (!response.ok) {
         setErrorMsg(
           (data && data.error) ||
-            'ENTER A VALID PROMPT LINK — this desk only scores real news articles.'
+            'ENTER A VALID PROMPT LINK — this tool only scores real news articles.'
         );
         setResult(null);
         setStatus('error');
@@ -110,7 +110,7 @@ export default function SemanticScore() {
             disabled={status === 'loading' || !body.trim()}
           >
             <FaBrain />
-            {status === 'loading' ? 'Running desk review…' : 'Score & open desk review'}
+            {status === 'loading' ? 'Running edit review…' : 'Score & open edit review'}
           </button>
 
           {errorMsg && (
@@ -153,7 +153,8 @@ export default function SemanticScore() {
           status={status}
           result={result}
           onRetry={handleAnalyze}
-          idleHint="Score the article to see the semantic matrix plus both desk views."
+          loadingFlow="semantic"
+          idleHint="Score the article to see the semantic matrix plus both editor views."
         />
       </div>
 
@@ -167,7 +168,7 @@ export default function SemanticScore() {
             }}
           >
             <FaArrowRight />
-            Next: Desk suggestions
+            Next: Edit advice
           </button>
         </section>
       )}

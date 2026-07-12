@@ -80,7 +80,8 @@ export default function TrendAlerts() {
           status={status}
           result={result}
           onRetry={run}
-          idleHint="Run Trends to get angles plus both desk views."
+          loadingFlow="trends"
+          idleHint="Run Trends to get angles plus both editor views."
         />
       </div>
 

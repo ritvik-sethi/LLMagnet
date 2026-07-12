@@ -1,8 +1,10 @@
 'use client';
 
 import { FaUserEdit, FaSearchDollar, FaArrowRight, FaListOl } from 'react-icons/fa';
+import { motion, useReducedMotion } from 'framer-motion';
 import AISparkleLoader from './AISparkleLoader';
 import styles from '../styles/CouncilVerdict.module.scss';
+import type { LoadingFlowId } from '@/lib/loadingFlows';
 
 export interface CouncilVoice {
   take: string;
@@ -62,11 +64,35 @@ export interface CouncilResultView {
 
 export type CouncilStatus = 'idle' | 'loading' | 'error' | 'success';
 
+/** Plain-language explainers for score axes — especially when we name frameworks like E-E-A-T. */
+const AXIS_EXPLAINERS: Record<string, string> = {
+  citationPotential:
+    'Would ChatGPT or a similar answer engine lift a sentence from this draft when answering a user?',
+  factualAuthority:
+    'Named companies, people, figures, and dates present in the copy — the raw material of a quotable claim.',
+  informationDensity:
+    'Unique reported detail a model cannot get from a generic rewrite of the same headline.',
+  structuralAccessibility:
+    'Self-contained passages and clear hierarchy so a retriever can chunk and lift answers cleanly.',
+  headingOptimization:
+    'Whether the headline matches the questions humans and models actually ask about this story.',
+  sourceCredibility:
+    'E-E-A-T is Google’s quality framework: Experience (first-hand reporting texture), Expertise (precise sector knowledge), Authoritativeness (this piece as a go-to source), and Trust (accuracy, honesty, reliability). Trust is the center — we score attribution here: who said what, named sources, and whether absolute claims are backed. Unsourced “facts” lower this axis.',
+  entityClarity: 'Companies and people named cleanly so a model can extract who is who.',
+  relationshipMapping: 'Funding, rivalry, and role links stated explicitly in the draft.',
+  topicHierarchy: 'Section logic / extractable hierarchy of the piece.',
+  queryCoverage: 'Questions this draft actually answers (fan-out coverage).',
+  schemaReadiness: 'Facts structured enough to lift without ambiguity.',
+  semanticMarkers: 'Definitions and context cues that reduce mis-citation.',
+};
+
 interface Props {
   status: CouncilStatus;
   result?: CouncilResultView | null;
   onRetry?: () => void;
   idleHint?: string;
+  /** Which pipeline step is loading — drives unique stage messages. */
+  loadingFlow?: LoadingFlowId;
 }
 
 function VoicePanel({
@@ -112,11 +138,19 @@ function VoicePanel({
   );
 }
 
-export default function CouncilVerdict({ status, result, onRetry, idleHint }: Props) {
+export default function CouncilVerdict({
+  status,
+  result,
+  onRetry,
+  idleHint,
+  loadingFlow = 'score',
+}: Props) {
+  const reduceMotion = useReducedMotion();
+
   if (status === 'loading') {
     return (
-      <div className={styles.state}>
-        <AISparkleLoader isLoading />
+      <div className={styles.loadingShell}>
+        <AISparkleLoader isLoading flow={loadingFlow} />
       </div>
     );
   }
@@ -152,30 +186,68 @@ export default function CouncilVerdict({ status, result, onRetry, idleHint }: Pr
     <div className={styles.verdict}>
       {result.breakdown && result.breakdown.length > 0 && (
         <section className={styles.matrix}>
+          <div className={styles.matrixAmbient} aria-hidden />
           <header className={styles.matrixHead}>
-            <FaListOl aria-hidden />
-            <h3>Where the score comes from</h3>
+            <div className={styles.matrixHeadLeft}>
+              <FaListOl aria-hidden />
+              <div>
+                <h3>Where the score comes from</h3>
+                <p className={styles.matrixLede}>
+                  Six signals an answer engine weighs before it quotes you
+                </p>
+              </div>
+            </div>
             {typeof result.score === 'number' && (
-              <span className={styles.matrixTotal}>{result.score}/100</span>
+              <div className={styles.matrixTotalWrap}>
+                <span className={styles.matrixTotalLabel}>Overall</span>
+                <span className={styles.matrixTotal}>{result.score}/100</span>
+              </div>
             )}
           </header>
           <div className={styles.matrixGrid}>
-            {result.breakdown.map((axis) => {
+            {result.breakdown.map((axis, index) => {
               const pct = axis.max > 0 ? Math.min(100, (axis.score / axis.max) * 100) : 0;
+              const explainer = AXIS_EXPLAINERS[axis.id];
+              const tone = pct < 60 ? 'weak' : pct < 80 ? 'mid' : 'strong';
               return (
-                <article key={axis.id} className={styles.matrixCard}>
+                <motion.article
+                  key={axis.id}
+                  className={`${styles.matrixCard} ${styles[`tone_${tone}`]}`}
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: index * 0.07,
+                    duration: 0.4,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
                   <div className={styles.matrixCardTop}>
+                    <span className={styles.matrixIndex}>
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
                     <span className={styles.matrixLabel}>{axis.label}</span>
                     <span className={styles.matrixScore}>
                       {axis.score}
                       <small>/{axis.max}</small>
                     </span>
                   </div>
+                  {explainer && <p className={styles.matrixExplain}>{explainer}</p>}
                   <div className={styles.bar}>
-                    <div className={styles.barFill} style={{ width: `${pct}%` }} />
+                    <motion.div
+                      className={styles.barFill}
+                      initial={reduceMotion ? false : { width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ delay: 0.15 + index * 0.07, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  </div>
+                  <div className={styles.matrixBarMeta}>
+                    <span>{Math.round(pct)}% of axis</span>
+                    <span className={styles[`chip_${tone}`]}>
+                      {tone === 'weak' ? 'Needs work' : tone === 'mid' ? 'Solid' : 'Strong'}
+                    </span>
                   </div>
                   {axis.note && <p className={styles.matrixNote}>{axis.note}</p>}
-                </article>
+                </motion.article>
               );
             })}
           </div>
