@@ -5,6 +5,7 @@ import queryOptimizerReducer from './slices/queryOptimizerSlice';
 import rewriteReducer from './slices/rewriteSlice';
 import trendAlertsReducer from './slices/trendAlertsSlice';
 import competitorAnalysisReducer from './slices/competitorAnalysisSlice';
+import editorialDraftReducer, { savePersistedDraft } from './slices/editorialDraftSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +15,14 @@ export const store = configureStore({
     rewrite: rewriteReducer,
     trendAlerts: trendAlertsReducer,
     competitorAnalysis: competitorAnalysisReducer,
+    editorialDraft: editorialDraftReducer,
   },
+});
+
+// Mirror the working draft to localStorage on change. The helper is a no-op
+// during SSR (typeof window guard), so subscribing at module scope is safe.
+store.subscribe(() => {
+  savePersistedDraft(store.getState().editorialDraft);
 });
 
 export type RootState = ReturnType<typeof store.getState>;
